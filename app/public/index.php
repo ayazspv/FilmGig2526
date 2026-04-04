@@ -23,5 +23,8 @@ $router->addRoute('GET', '/dashboard/admin/settings', ['App\Controllers\Settings
 $router->addRoute('GET', '/dashboard/freelancer', ['App\Controllers\DashboardController', 'showFreelancerDashboard']);
 $router->addRoute('GET', '/dashboard/freelancer/settings', ['App\Controllers\SettingsController', 'showFreelancerSettings']);
 
+$router->addRoute('GET', '/profile/admin', ['App\Controllers\ProfileController', 'showAdminProfile']);
+$router->addRoute('GET', '/profile/freelancer', ['App\Controllers\ProfileController', 'showFreelancerProfile']);
+
 // Dispatch the request
 $router->dispatch();

@@ -17,5 +17,8 @@ $router->addRoute('GET', '/reset-password', ['App\Controllers\AuthController', '
 $router->addRoute('GET', '/signup', ['App\Controllers\AuthController', 'showSignupForm']);
 $router->addRoute('GET', '/forget-password', ['App\Controllers\AuthController', 'showForgetPasswordForm']);
 
+$router->addRoute('GET', '/dashboard/admin', ['App\Controllers\DashboardController', 'showAdminDashboard']);
+$router->addRoute('GET', '/dashboard/freelancer', ['App\Controllers\DashboardController', 'showFreelancerDashboard']);
+
 // Dispatch the request
 $router->dispatch();

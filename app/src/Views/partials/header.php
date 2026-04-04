@@ -12,14 +12,14 @@ $escape = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTE
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkR4j8R2vk3f8mJbG3IYwYQU9f7VdAyjU2Q==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="/assets/css/main.css">
 </head>
-<body>
+<body style="background-color: #E5E7EB; color: #111827;">
     <!-- Header -->
-    <header class="border-bottom bg-white">
+    <header class="sticky-top shadow-sm" style="background-color: #172554;">
 
         <?php
-        include __DIR__ . '/navbars/normalNavbar.php';
-        include __DIR__ . '/navbars/freelanceNavbar.php';
-        include __DIR__ . '/navbars/adminNavbar.php';
+            include __DIR__ . '/navbars/freelanceNavbar.php';
+            include __DIR__ . '/navbars/adminNavbar.php';
+            include __DIR__ . '/navbars/normalNavbar.php';
         ?>
 
     </header>

@@ -1,72 +1,36 @@
 <?php
 
-/**
- * This is the central route handler of the application.
- * It uses FastRoute to map URLs to controller methods.
- * 
- * See the documentation for FastRoute for more information: https://github.com/nikic/FastRoute
- */
-
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../src/init.php';
 
-use FastRoute\RouteCollector;
-use function FastRoute\simpleDispatcher;
+use App\Framework\Router;
 
-/**
- * Define the routes for the application.
- */
-$dispatcher = simpleDispatcher(function (RouteCollector $r) {
-    $r->addRoute('GET', '/', ['App\Controllers\HomeController', 'home']);
-    $r->addRoute('GET', '/hello/{name}', ['App\Controllers\HelloController', 'greet']);
-});
+$router = new Router();
 
+// Define your routes here
+// Template: $router->addRoute('METHOD', '/path/{param}', ['ControllerClass', 'methodName']);
 
-/**
- * Get the request method and URI from the server variables and invoke the dispatcher.
- */
-$httpMethod = $_SERVER['REQUEST_METHOD'];
-$uri = strtok($_SERVER['REQUEST_URI'], '?');
-$routeInfo = $dispatcher->dispatch($httpMethod, $uri);
+$router->addRoute('GET', '/', ['App\Controllers\HomeController', 'index']);
 
-/**
- * Switch on the dispatcher result and call the appropriate controller method if found.
- */
-switch ($routeInfo[0]) {
-    // Handle not found routes
-    case FastRoute\Dispatcher::NOT_FOUND:
-        http_response_code(404);
-        echo 'Not Found';
-        break;
-    // Handle routes that were invoked with the wrong HTTP method
-    case FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
-        http_response_code(405);
-        echo 'Method Not Allowed';
-        break;
-    // Handle found routes
-    case FastRoute\Dispatcher::FOUND:
-        /**
-         * $routeInfo contains the data about the matched route.
-         * 
-         * $routeInfo[1] is the whatever we define as the third argument the `$r->addRoute` method.
-         *  For instance for: `$r->addRoute('GET', '/hello/{name}', ['App\Controllers\HelloController', 'greet']);`
-         *  $routeInfo[1] will be `['App\Controllers\HelloController', 'greet']`
-         * 
-         * Hint: we can use class strings like `App\Controllers\HelloController` to create new instances of that class.
-         * Hint: in PHP we can use a string to call a class method dynamically, like this: `$instance->$methodName($args);`
-         */
+$router->addRoute('GET', '/signin', ['App\Controllers\AuthController', 'showSigninForm']);
+$router->addRoute('GET', '/reset-password', ['App\Controllers\AuthController', 'showResetPasswordForm']);
+$router->addRoute('GET', '/signup', ['App\Controllers\AuthController', 'showSignupForm']);
+$router->addRoute('GET', '/forget-password', ['App\Controllers\AuthController', 'showForgetPasswordForm']);
 
-        // TODO: invoke the controller and method using the data in $routeInfo[1]
+$router->addRoute('GET', '/dashboard/admin', ['App\Controllers\DashboardController', 'showAdminDashboard']);
+$router->addRoute('GET', '/dashboard/admin/settings', ['App\Controllers\SettingsController', 'showAdminSettings']);
+$router->addRoute('GET', '/dashboard/admin/gigs/new', ['App\Controllers\DashboardController', 'showAdminGigPosting']);
+$router->addRoute('GET', '/dashboard/admin/gigs/{id}', ['App\Controllers\DashboardController', 'showAdminGigEditing']);
+$router->addRoute('GET', '/dashboard/admin/gigs', ['App\Controllers\DashboardController', 'showAdminGigListing']);
 
-        /**
-         * $route[2] contains any dynamic parameters parsed from the URL.
-         * For instance, if we add a route like:
-         *  $r->addRoute('GET', '/hello/{name}', ['App\Controllers\HelloController', 'greet']);
-         * and the URL is `/hello/dan-the-man`, then `$routeInfo[2][name]` will be `dan-the-man`.
-         */
+$router->addRoute('GET', '/dashboard/freelancer', ['App\Controllers\DashboardController', 'showFreelancerDashboard']);
+$router->addRoute('GET', '/dashboard/freelancer/settings', ['App\Controllers\SettingsController', 'showFreelancerSettings']);
 
-        // TODO: pass the dynamic route data to the controller method
-        // When done, visiting `http://localhost/hello/dan-the-man` should output "Hi, dan-the-man!"
-        throw new Exception('Not implemented yet');
+$router->addRoute('GET', '/profile/admin', ['App\Controllers\ProfileController', 'showAdminProfile']);
+$router->addRoute('GET', '/profile/freelancer', ['App\Controllers\ProfileController', 'showFreelancerProfile']);
 
-        break;
-}
+$router->addRoute('GET', '/gigs', ['App\Controllers\GigController', 'showGigListing']);
+$router->addRoute('GET', '/gigs/{id}', ['App\Controllers\GigController', 'showGigDetail']);
+
+// Dispatch the request
+$router->dispatch();

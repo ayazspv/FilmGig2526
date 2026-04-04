@@ -17,8 +17,8 @@ $escape = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTE
     <header class="sticky-top shadow-sm" style="background-color: #172554;">
 
         <?php
-            include __DIR__ . '/navbars/freelanceNavbar.php';
-            include __DIR__ . '/navbars/adminNavbar.php';
+            // include __DIR__ . '/navbars/freelanceNavbar.php';
+            // include __DIR__ . '/navbars/adminNavbar.php';
             include __DIR__ . '/navbars/normalNavbar.php';
         ?>
 

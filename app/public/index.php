@@ -12,5 +12,10 @@ $router = new Router();
 
 $router->addRoute('GET', '/', ['App\Controllers\HomeController', 'index']);
 
+$router->addRoute('GET', '/signin', ['App\Controllers\AuthController', 'showSigninForm']);
+$router->addRoute('GET', '/reset-password', ['App\Controllers\AuthController', 'showResetPasswordForm']);
+$router->addRoute('GET', '/signup', ['App\Controllers\AuthController', 'showSignupForm']);
+$router->addRoute('GET', '/forget-password', ['App\Controllers\AuthController', 'showForgetPasswordForm']);
+
 // Dispatch the request
 $router->dispatch();

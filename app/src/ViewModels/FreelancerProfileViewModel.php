@@ -2,7 +2,7 @@
 
 namespace App\ViewModels;
 
-class FreelancerProfile
+class FreelancerProfileViewModel
 {
     public function __construct(
         public readonly string $pageTitle,

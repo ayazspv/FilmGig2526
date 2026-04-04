@@ -2,21 +2,21 @@
 
 namespace App\Controllers;
 
-use App\ViewModels\AdminProfile;
-use App\ViewModels\FreelancerProfile;
+use App\ViewModels\AdminProfileViewModel;
+use App\ViewModels\FreelancerProfileViewModel;
 
 class ProfileController
 {
     public function showAdminProfile()
     {
-        $viewModel = AdminProfile::createDefault();
+        $viewModel = AdminProfileViewModel::createDefault();
 
         include __DIR__ . '/../Views/profiles/adminProfile.php';
     }
 
     public function showFreelancerProfile()
     {
-        $viewModel = FreelancerProfile::createDefault();
+        $viewModel = FreelancerProfileViewModel::createDefault();
 
         include __DIR__ . '/../Views/profiles/freelancerProfile.php';
     }

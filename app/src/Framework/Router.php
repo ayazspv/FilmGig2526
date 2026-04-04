@@ -96,6 +96,16 @@ class Router
     protected function handleNotFound(): void
     {
         http_response_code(404);
+
+        $pageTitle = '404 - Page Not Found';
+        $statusCode = 404;
+        $errorTitle = 'Page Not Found';
+        $errorMessage = 'Sorry, the page you\'re looking for doesn\'t exist or has been moved.';
+        $actions = [
+            ['url' => '/', 'label' => 'Go Back Home', 'class' => 'btn btn-primary'],
+            ['url' => 'javascript:history.back()', 'label' => 'Go Back', 'class' => 'btn btn-secondary'],
+        ];
+
         include __DIR__ . '/../Views/404.php';
     }
 

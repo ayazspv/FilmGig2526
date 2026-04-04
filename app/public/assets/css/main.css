@@ -1,0 +1,31 @@
+.gigs-thumbnail {
+    height: 250px;
+    object-fit: cover;
+}
+
+.main-hero-img {
+    height: 250px;
+    object-fit: cover;
+}
+
+@media (max-width: 767.98px) {
+	.gig-scroll-card {
+		width: 85vw;
+		min-width: 85vw;
+	}
+
+	.gigs-scroll-row {
+		scroll-snap-type: x mandatory;
+	}
+
+	.gigs-scroll-row .gig-scroll-card {
+		scroll-snap-align: start;
+	}
+}
+
+@media (min-width: 768px) {
+	.gig-scroll-card {
+		width: 22rem;
+		min-width: 22rem;
+	}
+}

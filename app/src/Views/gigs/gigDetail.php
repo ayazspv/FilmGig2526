@@ -85,7 +85,7 @@ $gig = $viewModel->gig;
                 </section>
             </section>
 
-            <section class="card border-0 shadow-sm rounded-4 mb-4">
+            <!-- <section class="card border-0 shadow-sm rounded-4 mb-4">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h2 class="h5 fw-bold mb-0" style="color: #172554;">Related Gigs</h2>
@@ -103,7 +103,7 @@ $gig = $viewModel->gig;
                         <?php endforeach; ?>
                     </div>
                 </div>
-            </section>
+            </section> -->
 
             <footer class="text-center">
                 <button class="btn btn-lg text-white px-4" style="background-color: #B91C1C; border-color: #B91C1C;">Apply for This Gig</button>

@@ -13,3 +13,13 @@ $escape = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTE
     <link rel="stylesheet" href="/assets/css/main.css">
 </head>
 <body>
+    <!-- Header -->
+    <header class="border-bottom bg-white">
+
+        <?php
+        include __DIR__ . '/navbars/normalNavbar.php';
+        include __DIR__ . '/navbars/freelanceNavbar.php';
+        include __DIR__ . '/navbars/adminNavbar.php';
+        ?>
+
+    </header>

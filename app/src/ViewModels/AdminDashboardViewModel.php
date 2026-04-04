@@ -11,7 +11,6 @@ class AdminDashboardViewModel
         public readonly array $stats,
         public readonly array $primaryTable,
         public readonly array $secondaryList,
-        public readonly array $focus,
     ) {
     }
 
@@ -45,19 +44,6 @@ class AdminDashboardViewModel
                     ['title' => 'Liam de Groot', 'subtitle' => 'Audio Engineer', 'meta' => '42 min ago'],
                     ['title' => 'Nina Bos', 'subtitle' => 'Production Assistant', 'meta' => '1 hour ago'],
                 ],
-            ],
-            focus: [
-                'leftTitle' => 'Talent Suggestions',
-                'leftDescription' => 'Top-rated professionals available this week.',
-                'leftItems' => [
-                    ['title' => 'Ava Jansen', 'subtitle' => 'Steadicam', 'badge' => 'Rating 4.9'],
-                    ['title' => 'Milan Vermeer', 'subtitle' => 'Set Lighting', 'badge' => 'Rating 4.8'],
-                    ['title' => 'Yara Peters', 'subtitle' => 'Post-Production', 'badge' => 'Rating 4.9'],
-                ],
-                'rightTitle' => 'Admin Focus',
-                'rightDescription' => 'Priority tasks for today.',
-                'badges' => ['Review flagged gigs', 'Approve 6 profiles', 'Close 2 reports'],
-                'buttonLabel' => 'Open Admin Queue',
             ],
         );
     }

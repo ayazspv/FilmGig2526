@@ -19,6 +19,9 @@ $router->addRoute('GET', '/forget-password', ['App\Controllers\AuthController', 
 
 $router->addRoute('GET', '/dashboard/admin', ['App\Controllers\DashboardController', 'showAdminDashboard']);
 $router->addRoute('GET', '/dashboard/admin/settings', ['App\Controllers\SettingsController', 'showAdminSettings']);
+$router->addRoute('GET', '/dashboard/admin/gigs/new', ['App\Controllers\DashboardController', 'showAdminGigPosting']);
+$router->addRoute('GET', '/dashboard/admin/gigs/{id}', ['App\Controllers\DashboardController', 'showAdminGigEditing']);
+$router->addRoute('GET', '/dashboard/admin/gigs', ['App\Controllers\DashboardController', 'showAdminGigListing']);
 
 $router->addRoute('GET', '/dashboard/freelancer', ['App\Controllers\DashboardController', 'showFreelancerDashboard']);
 $router->addRoute('GET', '/dashboard/freelancer/settings', ['App\Controllers\SettingsController', 'showFreelancerSettings']);

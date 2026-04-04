@@ -2,7 +2,7 @@
 
 namespace App\ViewModels;
 
-class AdminProfile
+class AdminProfileViewModel
 {
     public function __construct(
         public readonly string $pageTitle,

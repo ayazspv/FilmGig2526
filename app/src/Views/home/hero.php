@@ -20,16 +20,8 @@ $heroImage = $hero['image'] ?? [
 
                 <div class="bg-white rounded-4 shadow-sm p-3 p-md-4 mb-4">
                     <div class="row g-2">
-                        <div class="col-12 col-md-5">
+                        <div class="col-12 col-md-9">
                             <input type="text" class="form-control form-control-lg" placeholder="<?= $e($heroSearchPlaceholder) ?>">
-                        </div>
-                        <div class="col-6 col-md-4">
-                            <select class="form-select form-select-lg" aria-label="Category">
-                                <option selected>Category</option>
-                                <option>Production</option>
-                                <option>Post-Production</option>
-                                <option>Sound</option>
-                            </select>
                         </div>
                         <div class="col-6 col-md-3 d-grid">
                             <button class="btn btn-lg text-white" type="button" style="background-color: #B91C1C; border-color: #B91C1C;"><?= $e($heroSearchButtonLabel) ?></button>
@@ -42,13 +34,13 @@ $heroImage = $hero['image'] ?? [
             <div class="col-lg-6">
                 <div class="row g-3">
                     <div class="col-12">
-                        <img src="<?= $e((string) ($heroImage['src'] ?? 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=900&q=80')) ?>" class="img-fluid rounded-4 shadow" alt="<?= $e((string) ($heroImage['alt'] ?? 'Hero Image')) ?>">
+                        <img src="<?= $e((string) ($heroImage['src'] ?? 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=900&q=80')) ?>" class="img-fluid rounded-4 shadow main-hero-img w-100" alt="<?= $e((string) ($heroImage['alt'] ?? 'Hero Image')) ?>">
                     </div>
                     <div class="col-6">
-                        <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=700&q=80" class="img-fluid rounded-4 shadow-sm" alt="Camera operator on set">
+                        <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=700&q=80" class="img-fluid rounded-4 shadow-sm main-hero-img w-100" alt="Camera operator on set">
                     </div>
                     <div class="col-6">
-                        <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=700&q=80" class="img-fluid rounded-4 shadow-sm" alt="Film editor working">
+                        <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=700&q=80" class="img-fluid rounded-4 shadow-sm main-hero-img w-100" alt="Film editor working">
                     </div>
                 </div>
             </div>

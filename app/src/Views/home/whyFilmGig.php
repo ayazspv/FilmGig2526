@@ -32,13 +32,13 @@ $whyImage = $whyFilmGig['image'] ?? [
             <div class="col-lg-6">
                 <div class="row g-3">
                     <div class="col-12">
-                        <img src="<?= $e((string) ($whyImage['src'] ?? 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=80')) ?>" class="img-fluid rounded-4 shadow" alt="<?= $e((string) ($whyImage['alt'] ?? 'Why FilmGig')) ?>">
+                        <img src="<?= $e((string) ($whyImage['src'] ?? 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=80')) ?>" class="img-fluid rounded-4 shadow main-hero-img w-100" alt="<?= $e((string) ($whyImage['alt'] ?? 'Why FilmGig')) ?>">
                     </div>
                     <div class="col-6">
-                        <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80" class="img-fluid rounded-4 shadow-sm" alt="Filmmaking collaboration">
+                        <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80" class="img-fluid rounded-4 shadow-sm main-hero-img w-100" alt="Filmmaking collaboration">
                     </div>
                     <div class="col-6">
-                        <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80" class="img-fluid rounded-4 shadow-sm" alt="Cinema production lighting">
+                        <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80" class="img-fluid rounded-4 shadow-sm main-hero-img w-100" alt="Cinema production lighting">
                     </div>
                 </div>
             </div>

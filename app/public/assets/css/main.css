@@ -1,3 +1,13 @@
+.gigs-thumbnail {
+    height: 250px;
+    object-fit: cover;
+}
+
+.main-hero-img {
+    height: 250px;
+    object-fit: cover;
+}
+
 @media (max-width: 767.98px) {
 	.gig-scroll-card {
 		width: 85vw;

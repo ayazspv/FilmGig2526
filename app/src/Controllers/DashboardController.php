@@ -380,12 +380,15 @@ class DashboardController extends Controller
                 'value' => (string) count($freelancerRepository->findAll()),
                 'note' => 'Registered creators',
             ],
-            [
+        ];
+
+        if ($role === RoleType::ADMIN->value) {
+            $stats[] = [
                 'label' => 'Production Houses',
                 'value' => (string) count($productionHouseRepository->findAll()),
                 'note' => 'Publishing gigs',
-            ],
-        ];
+            ];
+        }
 
         $primaryRows = array_map(function (Gig $gig) use ($submissions, $role): array {
             $applicantCount = count(array_filter($submissions, static fn(Submission $submission): bool => $submission->getGigId() === $gig->getGigId()));

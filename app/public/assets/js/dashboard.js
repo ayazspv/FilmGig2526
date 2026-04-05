@@ -52,8 +52,17 @@ const renderDashboardError = (root) => {
 };
 
 const renderStatCards = (container, stats) => {
+	const statCount = stats.length;
+	const columnClass = statCount <= 1
+		? 'col-12'
+		: statCount === 2
+			? 'col-12 col-md-6'
+			: statCount === 3
+				? 'col-12 col-md-6 col-xl-4'
+				: 'col-12 col-sm-6 col-xl-3';
+
 	container.innerHTML = stats.map((stat) => `
-		<div class="col-12 col-sm-6 col-xl-3">
+		<div class="${columnClass}">
 			<div class="card border-0 shadow-sm rounded-4 text-center h-100">
 				<div class="card-body">
 					<p class="small text-uppercase mb-2" style="color: #1F2937;">${escapeHtml(stat.label ?? 'Stat')}</p>

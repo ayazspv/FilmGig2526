@@ -20,14 +20,14 @@ $pageScripts = ['/assets/js/dashboard.js'];
                 </div>
             </section>
 
-            <section class="mb-4">
+            <!-- <section class="mb-4">
                 <div class="row g-3" data-dashboard-stats>
                     <div class="col-12 col-sm-6 col-xl-3"><div class="card border-0 shadow-sm rounded-4 text-center h-100"><div class="card-body"><div class="placeholder-glow"><div class="placeholder col-7 mb-2"></div><div class="placeholder col-5"></div></div></div></div></div>
                     <div class="col-12 col-sm-6 col-xl-3"><div class="card border-0 shadow-sm rounded-4 text-center h-100"><div class="card-body"><div class="placeholder-glow"><div class="placeholder col-7 mb-2"></div><div class="placeholder col-5"></div></div></div></div></div>
                     <div class="col-12 col-sm-6 col-xl-3"><div class="card border-0 shadow-sm rounded-4 text-center h-100"><div class="card-body"><div class="placeholder-glow"><div class="placeholder col-7 mb-2"></div><div class="placeholder col-5"></div></div></div></div></div>
                     <div class="col-12 col-sm-6 col-xl-3"><div class="card border-0 shadow-sm rounded-4 text-center h-100"><div class="card-body"><div class="placeholder-glow"><div class="placeholder col-7 mb-2"></div><div class="placeholder col-5"></div></div></div></div></div>
                 </div>
-            </section>
+            </section> -->
 
             <section class="mb-4">
                 <div class="row g-4">

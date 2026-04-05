@@ -72,12 +72,21 @@ unset($_SESSION['gig_success_message']);
                                         </tr>
                                     <?php else: ?>
                                         <?php foreach ($primaryTable['rows'] as $row): ?>
+                                            <?php
+                                                $statusLabel = (string) ($row['status'] ?? 'Unknown');
+                                                $normalizedStatus = strtolower($statusLabel);
+                                                $statusStyle = match ($normalizedStatus) {
+                                                    'active' => 'background-color: #15803D; color: #FFFFFF;',
+                                                    'closed' => 'background-color: #B91C1C; color: #FFFFFF;',
+                                                    default => 'background-color: #6B7280; color: #FFFFFF;',
+                                                };
+                                            ?>
                                             <tr>
                                                 <td><?= htmlspecialchars($row['title']) ?></td>
                                                 <td><?= htmlspecialchars($row['category']) ?></td>
                                                 <td>
-                                                    <span class="badge" style="background-color: #FBBF24; color: #172554;">
-                                                        <?= htmlspecialchars($row['status']) ?>
+                                                    <span class="badge" style="<?= htmlspecialchars($statusStyle) ?>">
+                                                        <?= htmlspecialchars($statusLabel) ?>
                                                     </span>
                                                 </td>
                                                 <td><?= htmlspecialchars((string) $row['value']) ?></td>

@@ -1,13 +1,13 @@
 # Submission
 
 ## Purpose
-Let freelancers apply to gigs, track the status of their submissions, withdraw pending applications, and let admins review applications with synchronized gig status updates.
+Let freelancers apply to gigs, track the status of their submissions, withdraw pending applications, and let production houses review applications for their own gigs with synchronized gig status updates.
 
 ## Access Control
 - **Applying to a gig**: Freelancer users only
-- **Viewing submissions**: Freelancer users only
+- **Viewing freelancer submissions**: Freelancer users only
 - **Withdrawing a submission**: Freelancer users only, and only while the submission is `pending`
-- **Reviewing submissions**: Admin users only
+- **Reviewing received submissions**: Production House users only (for their own gigs)
 
 ## Controller Files Used
 - [app/src/Controllers/GigController.php](../../app/src/Controllers/GigController.php)
@@ -19,8 +19,8 @@ Let freelancers apply to gigs, track the status of their submissions, withdraw p
 - `GigController::handleGigApplication()`
 - `DashboardController::showFreelancerSubmissions()`
 - `DashboardController::handleFreelancerSubmissionWithdrawal()`
-- `DashboardController::showAdminSubmissionReview()`
-- `DashboardController::handleAdminSubmissionReview()`
+- `DashboardController::showProductionHouseSubmissions()`
+- `DashboardController::handleProductionHouseSubmissionReview()`
 - `Controller::requireRole()`
 - `Controller::redirect()`
 
@@ -32,8 +32,8 @@ Let freelancers apply to gigs, track the status of their submissions, withdraw p
 - `SubmissionService::applyToGig(int $gigId, int $userId): array`
 - `SubmissionService::getFreelancerSubmissions(int $userId): array`
 - `SubmissionService::withdrawSubmission(int $submissionId, int $userId): array`
-- `SubmissionService::getAdminReviewSubmissions(): array`
-- `SubmissionService::reviewSubmission(int $submissionId, string $decision): array`
+- `SubmissionService::getProductionHouseSubmissions(int $productionHouseOwnerId): array`
+- `SubmissionService::reviewSubmission(int $submissionId, int $ownerId, string $decision): array`
 
 ## Repository Files Used
 - [app/src/Repositories/SubmissionRepository.php](../../app/src/Repositories/SubmissionRepository.php)
@@ -83,7 +83,7 @@ Let freelancers apply to gigs, track the status of their submissions, withdraw p
 - [app/src/Views/dashboards/adminDashboard.php](../../app/src/Views/dashboards/adminDashboard.php)
 - [app/src/Views/partials/navbars/freelanceNavbar.php](../../app/src/Views/partials/navbars/freelanceNavbar.php)
 
-## Flow
+## Freelancer Application Flow
 1. A freelancer opens a gig detail page at `/gigs/{id}`.
 2. `GigController::showGigDetail()` loads the gig and passes it to the detail view model.
 3. The controller checks whether the authenticated freelancer already has a submission for that gig.
@@ -94,9 +94,14 @@ Let freelancers apply to gigs, track the status of their submissions, withdraw p
 8. On success, the service creates a `pending` submission.
 9. The freelancer can open `/dashboard/submissions` to review status history.
 10. Pending submissions can be withdrawn from the submissions page.
-11. Admin users can open `/dashboard/submissions/review` to accept or reject pending submissions.
-12. Accepting a submission closes the gig and rejects remaining pending submissions for the same gig.
-13. Rejecting a submission closes the gig when no pending submissions remain.
+
+## Production House Review Flow
+11. Production house users can open `/dashboard/submissions/received` to view and review submissions for their own gigs.
+12. The page displays submissions grouped by gig or freelancer.
+13. Pending submissions show Accept and Reject action buttons.
+14. Accepting a submission marks it `accepted`, closes the gig, and rejects remaining pending submissions for the same gig.
+15. Rejecting a submission marks it `rejected`.
+16. When no pending submissions remain after rejection, the gig status is updated accordingly.
 
 ## URLs
 - `POST /gigs/{id}/apply` - Apply to a gig

@@ -5,6 +5,7 @@ Show role-specific profile pages and allow authenticated users to update profile
 
 ## Quick Links
 - [Profile Editing](ProfileEditing.md) - End-to-end update flow for freelancer and production house users
+- [Public Profiles](PublicProfiles.md) - Public read-only profiles for production houses and freelancers
 
 ## Controller Files Used
 - [app/src/Controllers/ProfileController.php](../../app/src/Controllers/ProfileController.php)
@@ -14,6 +15,8 @@ Show role-specific profile pages and allow authenticated users to update profile
 - `ProfileController::showProfile()`
 - `ProfileController::showAdminProfile()`
 - `ProfileController::showFreelancerProfile()`
+- `ProfileController::showProductionHousePublicProfile()` - View public production house profile
+- `ProfileController::showFreelancerPublicProfile()` - View public freelancer profile
 - `ProfileController::handleProfileUpdate()`
 - `ProfileController::handleAdminProfileUpdate()`
 - `ProfileController::handleFreelancerProfileUpdate()`

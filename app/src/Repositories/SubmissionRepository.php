@@ -55,6 +55,22 @@ class SubmissionRepository extends Repository implements ISubmissionRepository
 	}
 
 	/**
+	 * Find a submission for a gig/freelancer pair.
+	 */
+	public function findByGigIdAndFreelancerId(int $gigId, int $freelancerId): ?Submission
+	{
+		$row = $this->fetchOneRow(
+			'SELECT * FROM submission WHERE gigId = :gigId AND freelancerId = :freelancerId LIMIT 1',
+			[
+				'gigId' => $gigId,
+				'freelancerId' => $freelancerId,
+			]
+		);
+
+		return $row !== null ? $this->mapRowToModel($row) : null;
+	}
+
+	/**
 	 * Return submissions for a freelancer.
 	 */
 	public function findByFreelancerId(int $freelancerId): array

@@ -35,6 +35,8 @@ $router->addRoute('POST', '/dashboard/gigs/new', ['App\Controllers\DashboardCont
 $router->addRoute('GET', '/dashboard/gigs/{id}', ['App\Controllers\DashboardController', 'showProductionHouseGigEditing']);
 $router->addRoute('POST', '/dashboard/gigs/{id}', ['App\Controllers\DashboardController', 'handleProductionHouseGigEditing']);
 $router->addRoute('POST', '/dashboard/gigs/{id}/delete', ['App\Controllers\DashboardController', 'handleProductionHouseGigDeletion']);
+$router->addRoute('GET', '/dashboard/submissions', ['App\Controllers\DashboardController', 'showFreelancerSubmissions']);
+$router->addRoute('POST', '/dashboard/submissions/{id}/withdraw', ['App\Controllers\DashboardController', 'handleFreelancerSubmissionWithdrawal']);
 
 
 
@@ -45,6 +47,7 @@ $router->addRoute('GET', '/settings', ['App\Controllers\SettingsController', 'sh
 
 $router->addRoute('GET', '/gigs', ['App\Controllers\GigController', 'showGigListing']);
 $router->addRoute('GET', '/gigs/{id}', ['App\Controllers\GigController', 'showGigDetail']);
+$router->addRoute('POST', '/gigs/{id}/apply', ['App\Controllers\GigController', 'handleGigApplication']);
 
 // Dispatch the request
 $router->dispatch();

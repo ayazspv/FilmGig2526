@@ -2,9 +2,9 @@
 document.addEventListener('DOMContentLoaded', onMainReady);
 
 /** Starts the main page helpers. */
-const onMainReady = () => {
+function onMainReady() {
 	initSignupRoleSwitching();
-};
+}
 
 /** Initializes role-based signup sections and required fields. */
 const initSignupRoleSwitching = () => {

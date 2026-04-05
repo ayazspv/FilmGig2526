@@ -2,9 +2,9 @@
 document.addEventListener('DOMContentLoaded', onHomeReady);
 
 /** Starts the home page initialization flow. */
-const onHomeReady = () => {
+function onHomeReady() {
 	initHomePage();
-};
+}
 
 /** Escapes user-provided values before inserting them into HTML. */
 const escapeHtml = (value) => {

@@ -4,6 +4,7 @@ $gig = $viewModel->gig;
 $contact = $viewModel->contact;
 $metadata = $viewModel->metadata;
 $currentRole = (string) ($_SESSION['auth_user_role'] ?? '');
+$isGigClosed = strtolower((string) ($gig['status'] ?? '')) === 'closed';
 $hasAlreadyApplied = $hasAlreadyApplied ?? false;
 $submissionSuccessMessage = $submissionSuccessMessage ?? null;
 $submissionErrorMessage = $submissionErrorMessage ?? null;
@@ -76,20 +77,22 @@ $submissionErrorMessage = $submissionErrorMessage ?? null;
                 </div>
             <?php endif; ?>
 
-            <?php if ($currentRole === ''): ?>
-                <footer class="text-center">
-                    <a href="/signin" class="btn btn-lg text-white px-4" style="background-color: #B91C1C; border-color: #B91C1C;">Apply Now</a>
-                </footer>
-            <?php elseif ($currentRole === 'freelancer'): ?>
-                <footer class="text-center">
-                    <?php if ($hasAlreadyApplied): ?>
-                        <a href="/dashboard/submissions" class="btn btn-lg btn-outline-secondary">Go to Submissions</a>
-                    <?php else: ?>
-                        <form method="POST" action="/gigs/<?= htmlspecialchars((string) ($gig['gigId'] ?? 0)) ?>/apply">
-                            <button type="submit" class="btn btn-lg text-white px-4" style="background-color: #B91C1C; border-color: #B91C1C;">Apply Now</button>
-                        </form>
-                    <?php endif; ?>
-                </footer>
+            <?php if (!$isGigClosed): ?>
+                <?php if ($currentRole === ''): ?>
+                    <footer class="text-center">
+                        <a href="/signin" class="btn btn-lg text-white px-4" style="background-color: #B91C1C; border-color: #B91C1C;">Apply Now</a>
+                    </footer>
+                <?php elseif ($currentRole === 'freelancer'): ?>
+                    <footer class="text-center">
+                        <?php if ($hasAlreadyApplied): ?>
+                            <a href="/dashboard/submissions" class="btn btn-lg btn-outline-secondary">Go to Submissions</a>
+                        <?php else: ?>
+                            <form method="POST" action="/gigs/<?= htmlspecialchars((string) ($gig['gigId'] ?? 0)) ?>/apply">
+                                <button type="submit" class="btn btn-lg text-white px-4" style="background-color: #B91C1C; border-color: #B91C1C;">Apply Now</button>
+                            </form>
+                        <?php endif; ?>
+                    </footer>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
     </main>

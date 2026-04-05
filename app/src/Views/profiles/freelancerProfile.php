@@ -53,7 +53,7 @@ $successMessage = $viewModel->successMessage;
 
                                 <div class="mb-3">
                                     <label for="profileUsername" class="form-label fw-semibold">Username</label>
-                                    <input type="text" id="profileUsername" name="username" class="form-control form-control-lg<?= isset($errors['username']) ? ' is-invalid' : '' ?>" value="<?= htmlspecialchars($form['username']) ?>">
+                                    <input type="text" id="profileUsername" name="username" class="form-control form-control-lg<?= isset($errors['username']) ? ' is-invalid' : '' ?>" value="<?= htmlspecialchars($form['username']) ?>" pattern="[A-Za-z0-9.]+" title="Only letters, numbers, and dots (.) are allowed">
                                     <?php if (isset($errors['username'])): ?>
                                         <div class="invalid-feedback"><?= htmlspecialchars($errors['username']) ?></div>
                                     <?php endif; ?>

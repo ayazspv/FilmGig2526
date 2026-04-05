@@ -104,6 +104,11 @@ class SignupService extends Service implements ISignupService
             return;
         }
 
+        if (preg_match('/^[A-Za-z0-9.]+$/', $input['username']) !== 1) {
+            $errors['username'] = 'Username may only contain letters, numbers, and dots (.).';
+            return;
+        }
+
         if ($this->userRepository->usernameExists($input['username'])) {
             $errors['username'] = 'This username is already taken.';
         }

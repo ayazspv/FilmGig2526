@@ -40,7 +40,8 @@
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label for="username" class="form-label fw-semibold">Username</label>
-                                        <input type="text" class="form-control form-control-lg" id="username" name="username" value="<?= $escape((string) ($viewModel->oldInput['username'] ?? '')) ?>" required>
+                                        <input type="text" class="form-control form-control-lg" id="username" name="username" value="<?= $escape((string) ($viewModel->oldInput['username'] ?? '')) ?>" pattern="[A-Za-z0-9.]+" title="Only letters, numbers, and dots (.) are allowed" required>
+                                        <small class="text-muted">Only letters, numbers, and dots (.).</small>
                                     </div>
                                     <div class="col-md-6">
                                         <label for="role" class="form-label fw-semibold">Account Type</label>

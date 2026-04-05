@@ -315,6 +315,8 @@ class ProfileService extends Service implements IProfileService
 
         if ($input['username'] === '') {
             $errors['username'] = 'Username is required.';
+        } elseif (preg_match('/^[A-Za-z0-9.]+$/', $input['username']) !== 1) {
+            $errors['username'] = 'Username may only contain letters, numbers, and dots (.).';
         }
 
         if ($input['companyName'] === '') {
@@ -346,6 +348,8 @@ class ProfileService extends Service implements IProfileService
 
         if ($input['username'] === '') {
             $errors['username'] = 'Username is required.';
+        } elseif (preg_match('/^[A-Za-z0-9.]+$/', $input['username']) !== 1) {
+            $errors['username'] = 'Username may only contain letters, numbers, and dots (.).';
         }
 
         if ($input['fullName'] === '') {

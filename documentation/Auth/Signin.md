@@ -1,7 +1,7 @@
 # Signin
 
 ## Purpose
-Allow an existing user to log in with their username and password, then route them to the correct dashboard based on role.
+Allow an existing user to log in with a username and password, then route them to the correct dashboard based on role.
 
 ## Controller Files Used
 - [app/src/Controllers/AuthController.php](../../app/src/Controllers/AuthController.php)
@@ -10,6 +10,7 @@ Allow an existing user to log in with their username and password, then route th
 ### Methods Used
 - `AuthController::showSigninForm()`
 - `AuthController::handleSigninForm()`
+- `AuthController::renderSignin()`
 - `Controller::isAuthenticated()`
 - `Controller::redirect()`
 
@@ -18,7 +19,6 @@ Allow an existing user to log in with their username and password, then route th
 
 ### Methods Used
 - `User::getUserId()`
-- `User::getUsername()`
 - `User::getName()`
 - `User::getPassword()`
 - `User::getRole()`
@@ -29,21 +29,33 @@ Allow an existing user to log in with their username and password, then route th
 
 ### Methods Used
 - `UserRepository::findByUsername()`
-- `UserRepository::emailExists()` is not used in signin, but remains available for signup flows
 - `IUserRepository::findByUsername()`
 
 ## Service Files Used
 - [app/src/Services/SigninService.php](../../app/src/Services/SigninService.php)
+- [app/src/Services/Interfaces/ISigninService.php](../../app/src/Services/Interfaces/ISigninService.php)
+- [app/src/Framework/Service.php](../../app/src/Framework/Service.php)
 
 ### Methods Used
 - `SigninService::authenticate()`
+- `SigninService::normalizeInput()`
+- `SigninService::validate()`
+- `SigninService::findUserByUsername()`
+- `SigninService::isValidPassword()`
+- `SigninService::hasSupportedRole()`
+- `SigninService::buildFailureResult()`
+- `SigninService::buildRepositoryFailureResult()`
+- `SigninService::buildAuthenticationFailureResult()`
+- `SigninService::buildUnsupportedRoleFailureResult()`
+- `SigninService::buildSuccessResult()`
 
 ## Flow
 1. The user opens `/signin`.
-2. `AuthController::showSigninForm()` renders the signin view and optionally shows signup/reset success messages.
+2. `AuthController::showSigninForm()` renders the signin page and shows any flash success message from signup or password reset.
 3. The user submits username and password.
-4. `AuthController::handleSigninForm()` delegates validation and authentication to `SigninService::authenticate()`.
-5. `SigninService` normalizes the input, checks required fields, and loads the user by username through `UserRepository::findByUsername()`.
-6. The service verifies the password with `password_verify()` and checks that the role is valid.
-7. On success, `AuthController` stores the user session data and redirects to `/dashboard`.
-8. On failure, the signin form is rendered again with validation or authentication errors.
+4. `AuthController::handleSigninForm()` passes the request payload to `SigninService::authenticate()`.
+5. `SigninService` normalizes and validates the input.
+6. The service loads the user with `UserRepository::findByUsername()`.
+7. The service verifies the password and checks that the role is supported.
+8. On success, the controller stores the authenticated user data in session and redirects to `/dashboard`.
+9. On failure, the signin view is rendered again with validation or authentication errors.

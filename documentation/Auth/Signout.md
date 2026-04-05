@@ -25,4 +25,4 @@ End the current session and send the user back to the signin page.
 1. The user clicks Log Out from the navbar.
 2. The route `/signout` calls `AuthController::handleSignout()`.
 3. The controller clears the session with `Controller::destroySession()`.
-4. The controller redirects the browser to `/signin`.
+4. The controller redirects to `/signin`.

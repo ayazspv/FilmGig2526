@@ -10,6 +10,9 @@ $router = new Router();
 // Define your routes here
 // Template: $router->addRoute('METHOD', '/path/{param}', ['ControllerClass', 'methodName']);
 
+// Non-auth routes
+$router->addRoute('GET', '/', ['App\Controllers\HomeController', 'index']);
+
 // Auth routes
 $router->addRoute('GET', '/signup', ['App\Controllers\AuthController', 'showSignupForm']);
 $router->addRoute('POST', '/signup', ['App\Controllers\AuthController', 'handleSignupForm']);
@@ -18,19 +21,24 @@ $router->addRoute('GET', '/signin', ['App\Controllers\AuthController', 'showSign
 $router->addRoute('POST', '/signin', ['App\Controllers\AuthController', 'handleSigninForm']);
 $router->addRoute('GET', '/signout', ['App\Controllers\AuthController', 'handleSignout']);
 
-
-$router->addRoute('GET', '/', ['App\Controllers\HomeController', 'index']);
-
 $router->addRoute('GET', '/reset-password', ['App\Controllers\AuthController', 'showResetPasswordForm']);
 $router->addRoute('POST', '/reset-password', ['App\Controllers\AuthController', 'handleResetPasswordForm']);
 $router->addRoute('GET', '/forget-password', ['App\Controllers\AuthController', 'showForgetPasswordForm']);
 $router->addRoute('POST', '/forget-password', ['App\Controllers\AuthController', 'handleForgetPasswordForm']);
 
+// Dashboard routes
 $router->addRoute('GET', '/dashboard', ['App\Controllers\DashboardController', 'showDashboard']);
 
-$router->addRoute('GET', '/dashboard/admin/gigs/new', ['App\Controllers\DashboardController', 'showAdminGigPosting']);
-$router->addRoute('GET', '/dashboard/admin/gigs/{id}', ['App\Controllers\DashboardController', 'showAdminGigEditing']);
-$router->addRoute('GET', '/dashboard/admin/gigs', ['App\Controllers\DashboardController', 'showAdminGigListing']);
+$router->addRoute('GET', '/dashboard/gigs', ['App\Controllers\DashboardController', 'showProductionHouseGigListing']);
+$router->addRoute('GET', '/dashboard/gigs/new', ['App\Controllers\DashboardController', 'showProductionHouseGigPosting']);
+$router->addRoute('POST', '/dashboard/gigs/new', ['App\Controllers\DashboardController', 'handleProductionHouseGigPosting']);
+$router->addRoute('GET', '/dashboard/gigs/{id}', ['App\Controllers\DashboardController', 'showProductionHouseGigEditing']);
+$router->addRoute('POST', '/dashboard/gigs/{id}', ['App\Controllers\DashboardController', 'handleProductionHouseGigEditing']);
+$router->addRoute('POST', '/dashboard/gigs/{id}/delete', ['App\Controllers\DashboardController', 'handleProductionHouseGigDeletion']);
+
+
+
+
 
 $router->addRoute('GET', '/profile', ['App\Controllers\ProfileController', 'showProfile']);
 $router->addRoute('GET', '/settings', ['App\Controllers\SettingsController', 'showSettings']);

@@ -2,6 +2,8 @@
 
 namespace App\ViewModels;
 
+use App\Models\Gig;
+
 class AdminGigEditingViewModel 
 {
     public function __construct(
@@ -11,13 +13,14 @@ class AdminGigEditingViewModel
         public readonly string $heroDescription,
         public readonly array $formFields,
         public readonly array $gigData,
+        public readonly array $errors = [],
     ) {
     }
 
     public static function createDefault(): self
     {
         return new self(
-            pageTitle: 'Edit Gig - Admin Dashboard',
+            pageTitle: 'Edit Gig - FilmGig',
             badgeLabel: 'Edit Gig',
             heroTitle: 'Update Existing Gig',
             heroDescription: 'Adjust status, rates, and details to keep your gig posting up to date.',
@@ -27,22 +30,48 @@ class AdminGigEditingViewModel
                 ['name' => 'category', 'label' => 'Category', 'type' => 'select', 'options' => ['Camera', 'Editing', 'Sound', 'Production', 'Animation']],
                 ['name' => 'location', 'label' => 'Location', 'type' => 'text', 'placeholder' => 'e.g. Amsterdam, Netherlands'],
                 ['name' => 'startDate', 'label' => 'Start Date', 'type' => 'date'],
-                ['name' => 'startTime', 'label' => 'Start Time', 'type' => 'time'],
-                ['name' => 'rateType', 'label' => 'Rate Type', 'type' => 'select', 'options' => ['Hourly', 'Daily', 'Project']],
+                ['name' => 'rateType', 'label' => 'Rate Type', 'type' => 'select', 'options' => ['hourly', 'fixed']],
                 ['name' => 'payRate', 'label' => 'Pay Rate (EUR)', 'type' => 'number', 'placeholder' => 50],
-                ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => ['Active', 'Paused', 'Draft', 'Closed']],
+                ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => ['active', 'closed']],
             ],
             gigData: [
-                'title' => 'Documentary Camera Operator',
-                'description' => 'Capture interviews and b-roll footage for a 3-day documentary production.',
+                'gigId' => 0,
+                'title' => '',
+                'description' => '',
                 'category' => 'Camera',
-                'location' => 'Amsterdam, Netherlands',
-                'startDate' => '2026-04-12',
-                'startTime' => '08:30',
-                'rateType' => 'Hourly',
-                'payRate' => '55',
-                'status' => 'Active',
+                'location' => '',
+                'startDate' => '',
+                'rateType' => 'hourly',
+                'payRate' => '50',
+                'status' => 'active',
             ],
+        );
+    }
+
+    public static function createWithGig(Gig $gig, array $oldInput = [], array $errors = []): self
+    {
+        $viewModel = self::createDefault();
+
+        $gigData = [
+            'gigId' => $gig->getGigId(),
+            'title' => $gig->getTitle(),
+            'description' => $gig->getDescription(),
+            'category' => $gig->getCategory(),
+            'location' => $gig->getLocation(),
+            'startDate' => $gig->getStartDate(),
+            'rateType' => $gig->getRateType(),
+            'payRate' => (string) $gig->getPayRate(),
+            'status' => $gig->getStatus(),
+        ];
+
+        return new self(
+            pageTitle: $viewModel->pageTitle,
+            badgeLabel: $viewModel->badgeLabel,
+            heroTitle: $viewModel->heroTitle,
+            heroDescription: $viewModel->heroDescription,
+            formFields: $viewModel->formFields,
+            gigData: array_merge($gigData, $oldInput),
+            errors: $errors,
         );
     }
 }

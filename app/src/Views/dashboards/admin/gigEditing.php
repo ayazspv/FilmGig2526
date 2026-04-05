@@ -1,7 +1,9 @@
 <?php
+$viewModel = $viewModel ?? \App\ViewModels\AdminGigEditingViewModel::createDefault();
 $pageTitle = $viewModel->pageTitle;
 $formFields = $viewModel->formFields;
 $gigData = $viewModel->gigData;
+$errors = $viewModel->errors ?? [];
 ?>
 
 <div class="d-flex flex-column min-vh-100" style="background-color: #E5E7EB;">
@@ -24,6 +26,17 @@ $gigData = $viewModel->gigData;
 
             <section class="card border-0 shadow-sm rounded-4">
                 <div class="card-body p-4 p-md-5">
+                    <?php if (!empty($errors)): ?>
+                        <div class="alert alert-danger">
+                            <p class="fw-semibold mb-2">Please fix the highlighted issues.</p>
+                            <ul class="mb-0">
+                                <?php foreach ($errors as $error): ?>
+                                    <li><?= htmlspecialchars($error) ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    <?php endif; ?>
+
                     <form method="POST" enctype="multipart/form-data">
                         <div class="row g-4">
                             <?php foreach ($formFields as $field): ?>
@@ -34,7 +47,7 @@ $gigData = $viewModel->gigData;
                                         <select class="form-select form-select-lg" id="<?= htmlspecialchars($field['name']) ?>" name="<?= htmlspecialchars($field['name']) ?>" required>
                                             <?php foreach ($field['options'] as $option): ?>
                                                 <option value="<?= htmlspecialchars($option) ?>"<?= (($gigData[$field['name']] ?? '') === $option) ? ' selected' : '' ?>>
-                                                    <?= htmlspecialchars($option) ?>
+                                                    <?= htmlspecialchars(ucfirst((string) $option)) ?>
                                                 </option>
                                             <?php endforeach; ?>
                                         </select>
@@ -52,8 +65,8 @@ $gigData = $viewModel->gigData;
 
                         <div class="d-flex flex-wrap gap-2 mt-4 justify-content-end">
                             <button type="submit" class="btn btn-lg text-white" style="background-color: #172554; border-color: #172554;">Save Changes</button>
-                            <button type="button" class="btn btn-lg text-white" style="background-color: #B91C1C; border-color: #B91C1C;" onclick="return confirm('Are you sure you want to delete this gig?');">Delete Gig</button>
-                            <a href="/dashboard/admin/gigs" class="btn btn-lg btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-lg text-white" style="background-color: #B91C1C; border-color: #B91C1C;" formaction="/dashboard/gigs/<?= htmlspecialchars((string) $gigData['gigId']) ?>/delete" formmethod="POST" formnovalidate onclick="return confirm('Are you sure you want to delete this gig?');">Delete Gig</button>
+                            <a href="/dashboard/gigs" class="btn btn-lg btn-outline-secondary">Cancel</a>
                         </div>
                     </form>
                 </div>

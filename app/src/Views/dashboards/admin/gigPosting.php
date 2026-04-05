@@ -1,7 +1,9 @@
 <?php
+$viewModel = $viewModel ?? \App\ViewModels\AdminGigPostingViewModel::createDefault();
 $pageTitle = $viewModel->pageTitle;
 $formFields = $viewModel->formFields;
 $defaultValues = $viewModel->defaultValues;
+$errors = $viewModel->errors ?? [];
 ?>
 
 <div class="d-flex flex-column min-vh-100" style="background-color: #E5E7EB;">
@@ -24,6 +26,17 @@ $defaultValues = $viewModel->defaultValues;
 
             <section class="card border-0 shadow-sm rounded-4">
                 <div class="card-body p-4 p-md-5">
+                    <?php if (!empty($errors)): ?>
+                        <div class="alert alert-danger">
+                            <p class="fw-semibold mb-2">Please fix the highlighted issues.</p>
+                            <ul class="mb-0">
+                                <?php foreach ($errors as $error): ?>
+                                    <li><?= htmlspecialchars($error) ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    <?php endif; ?>
+
                     <form method="POST" enctype="multipart/form-data" id="gigPostingForm">
                         <div class="row g-4">
                             <?php foreach ($formFields as $field): ?>
@@ -34,7 +47,7 @@ $defaultValues = $viewModel->defaultValues;
                                         <select class="form-select form-select-lg" id="<?= htmlspecialchars($field['name']) ?>" name="<?= htmlspecialchars($field['name']) ?>" required>
                                             <?php foreach ($field['options'] as $option): ?>
                                                 <option value="<?= htmlspecialchars($option) ?>"<?= (($defaultValues[$field['name']] ?? '') === $option) ? ' selected' : '' ?>>
-                                                    <?= htmlspecialchars($option) ?>
+                                                    <?= htmlspecialchars(ucfirst((string) $option)) ?>
                                                 </option>
                                             <?php endforeach; ?>
                                         </select>
@@ -52,7 +65,7 @@ $defaultValues = $viewModel->defaultValues;
 
                         <div class="d-flex flex-wrap gap-2 mt-4 justify-content-end">
                             <button type="submit" class="btn btn-lg text-white" style="background-color: #B91C1C; border-color: #B91C1C;">Publish Gig</button>
-                            <a href="/dashboard/admin/gigs" class="btn btn-lg btn-outline-secondary">Cancel</a>
+                            <a href="/dashboard/gigs" class="btn btn-lg btn-outline-secondary">Cancel</a>
                         </div>
                     </form>
                 </div>

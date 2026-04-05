@@ -11,13 +11,14 @@ class AdminGigPostingViewModel
         public readonly string $heroDescription,
         public readonly array $formFields,
         public readonly array $defaultValues,
+        public readonly array $errors = [],
     ) {
     }
 
     public static function createDefault(): self
     {
         return new self(
-            pageTitle: 'Post a New Gig - Admin Dashboard',
+            pageTitle: 'Post a New Gig - FilmGig',
             badgeLabel: 'Create Gig',
             heroTitle: 'Post a New Gig Opening',
             heroDescription: 'Publish a detailed gig brief to attract the right freelancers quickly.',
@@ -27,10 +28,9 @@ class AdminGigPostingViewModel
                 ['name' => 'category', 'label' => 'Category', 'type' => 'select', 'options' => ['Camera', 'Editing', 'Sound', 'Production', 'Animation']],
                 ['name' => 'location', 'label' => 'Location', 'type' => 'text', 'placeholder' => 'e.g. Amsterdam, Netherlands'],
                 ['name' => 'startDate', 'label' => 'Start Date', 'type' => 'date'],
-                ['name' => 'startTime', 'label' => 'Start Time', 'type' => 'time'],
-                ['name' => 'rateType', 'label' => 'Rate Type', 'type' => 'select', 'options' => ['Hourly', 'Daily', 'Project']],
+                ['name' => 'rateType', 'label' => 'Rate Type', 'type' => 'select', 'options' => ['hourly', 'fixed']],
                 ['name' => 'payRate', 'label' => 'Pay Rate (EUR)', 'type' => 'number', 'placeholder' => 50],
-                ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => ['Active', 'Paused', 'Draft']],
+                ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => ['active', 'closed']],
             ],
             defaultValues: [
                 'title' => '',
@@ -38,11 +38,25 @@ class AdminGigPostingViewModel
                 'category' => 'Camera',
                 'location' => '',
                 'startDate' => '',
-                'startTime' => '',
-                'rateType' => 'Hourly',
+                'rateType' => 'hourly',
                 'payRate' => '50',
-                'status' => 'Active',
+                'status' => 'active',
             ],
+        );
+    }
+
+    public static function createWithInput(array $oldInput, array $errors = []): self
+    {
+        $viewModel = self::createDefault();
+
+        return new self(
+            pageTitle: $viewModel->pageTitle,
+            badgeLabel: $viewModel->badgeLabel,
+            heroTitle: $viewModel->heroTitle,
+            heroDescription: $viewModel->heroDescription,
+            formFields: $viewModel->formFields,
+            defaultValues: array_merge($viewModel->defaultValues, $oldInput),
+            errors: $errors,
         );
     }
 }

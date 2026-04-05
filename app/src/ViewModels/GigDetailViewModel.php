@@ -2,6 +2,10 @@
 
 namespace App\ViewModels;
 
+use App\Models\Gig;
+use App\Models\ProductionHouse;
+use App\Models\User;
+
 class GigDetailViewModel
 {
     public function __construct(
@@ -10,60 +14,47 @@ class GigDetailViewModel
         public readonly string $heroTitle,
         public readonly string $heroDescription,
         public readonly array $gig,
-        public readonly array $requirements,
-        public readonly array $highlights,
         public readonly array $contact,
-        public readonly array $relatedGigs,
+        public readonly array $metadata,
     ) {
     }
 
-    public static function createDefault(): self
+    public static function createFromGig(Gig $gig, ?User $owner = null, ?ProductionHouse $productionHouse = null): self
     {
+        $rateTypeLabel = $gig->getRateType() === 'fixed' ? 'Fixed' : 'Hourly';
+        $statusLabel = ucfirst($gig->getStatus());
+        $companyName = $productionHouse !== null && $productionHouse->getCompanyName() !== ''
+            ? $productionHouse->getCompanyName()
+            : ($owner !== null ? $owner->getName() : 'Production House');
+
         return new self(
-            pageTitle: 'Gig Detail - FilmGig',
+            pageTitle: $gig->getTitle() . ' - FilmGig',
             badgeLabel: 'Gig Detail',
-            heroTitle: 'Documentary Camera Operator',
-            heroDescription: 'Review the full gig brief, requirements, and compensation before applying.',
+            heroTitle: $gig->getTitle(),
+            heroDescription: $gig->getDescription(),
             gig: [
-                'title' => 'Documentary Camera Operator',
-                'image' => 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1200&q=80',
-                'description' => 'Join a small crew to film interviews and b-roll for a 3-day documentary production focused on local creative entrepreneurs.',
-                'rateType' => 'Hourly',
-                'payRate' => 'EUR 55/hr',
-                'duration' => '3 days',
-                'location' => 'Amsterdam, Netherlands',
-                'startDate' => '2026-04-12',
-                'startTime' => '08:30',
-                'category' => 'Camera',
-            ],
-            requirements: [
-                '3+ years of camera operation experience',
-                'Portfolio with documentary or interview work',
-                'Comfortable working in small agile crews',
-            ],
-            highlights: [
-                'Meals and local transport reimbursed',
-                'Potential extension to a follow-up project',
-                'Credit in final production release',
+                'title' => $gig->getTitle(),
+                'description' => $gig->getDescription(),
+                'category' => $gig->getCategory(),
+                'location' => $gig->getLocation(),
+                'startDate' => $gig->getStartDate(),
+                'rateType' => $rateTypeLabel,
+                'payRate' => sprintf('EUR %.2f', $gig->getPayRate()),
+                'status' => $statusLabel,
             ],
             contact: [
-                'name' => 'Lotte van Dijk',
-                'company' => 'Northlight Stories',
-                'email' => 'lotte@northlightstories.nl',
+                'name' => $owner !== null ? $owner->getName() : $companyName,
+                'company' => $companyName,
+                'email' => $owner !== null ? $owner->getEmail() : '',
+                'website' => $productionHouse !== null ? $productionHouse->getWebsite() : '',
             ],
-            relatedGigs: [
-                [
-                    'title' => 'Second Camera Assistant',
-                    'location' => 'Haarlem, Netherlands',
-                    'rate' => 'EUR 38/hr',
-                    'url' => 'gig-detail',
-                ],
-                [
-                    'title' => 'Lighting Technician for Interviews',
-                    'location' => 'Leiden, Netherlands',
-                    'rate' => 'EUR 44/hr',
-                    'url' => 'gig-detail',
-                ],
+            metadata: [
+                ['label' => 'Category', 'value' => $gig->getCategory()],
+                ['label' => 'Location', 'value' => $gig->getLocation()],
+                ['label' => 'Start Date', 'value' => $gig->getStartDate()],
+                ['label' => 'Rate Type', 'value' => $rateTypeLabel],
+                ['label' => 'Pay Rate', 'value' => sprintf('EUR %.2f', $gig->getPayRate())],
+                ['label' => 'Status', 'value' => $statusLabel],
             ],
         );
     }

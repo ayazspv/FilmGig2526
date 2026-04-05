@@ -16,19 +16,8 @@ class SettingsController extends Controller
     {
         $this->requireAuthentication();
 
-        $role = $this->authUserRole();
-
-        if ($role === RoleType::ADMIN->value || $role === RoleType::PRODUCTION_HOUSE->value) {
-            $this->showAdminSettings($params);
-            return;
-        }
-
-        if ($role === RoleType::FREELANCER->value) {
-            $this->showFreelancerSettings($params);
-            return;
-        }
-
-        $this->redirect('/signin');
+        // Settings should be the editable version of profile.
+        $this->redirect('/profile');
     }
 
     /**

@@ -34,7 +34,6 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdownAdmin">
                     <li><a class="dropdown-item" href="/profile">My Profile</a></li>
-                    <li><a class="dropdown-item" href="/settings">Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="/signout">Log Out</a></li>
                 </ul>

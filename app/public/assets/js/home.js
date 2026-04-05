@@ -68,10 +68,10 @@ const renderHomeHero = (hero) => {
 					<div class="bg-white rounded-4 shadow-sm p-3 p-md-4 mb-4">
 						<div class="row g-2">
 							<div class="col-12 col-md-9">
-								<input type="text" class="form-control form-control-lg" placeholder="${searchPlaceholder}">
+								<input type="text" id="homeGigSearchInput" class="form-control form-control-lg" placeholder="${searchPlaceholder}">
 							</div>
 							<div class="col-6 col-md-3 d-grid">
-								<button class="btn btn-lg text-white" type="button" style="background-color: #B91C1C; border-color: #B91C1C;">${searchButtonLabel}</button>
+								<button id="homeGigSearchButton" class="btn btn-lg text-white" type="button" style="background-color: #B91C1C; border-color: #B91C1C;">${searchButtonLabel}</button>
 							</div>
 						</div>
 					</div>
@@ -104,6 +104,22 @@ const renderHomeHero = (hero) => {
 			</div>
 		</div>
 	`;
+
+	const searchInput = heroRoot.querySelector('#homeGigSearchInput');
+	const searchButton = heroRoot.querySelector('#homeGigSearchButton');
+	const navigateToGigsSearch = () => {
+		const term = (searchInput?.value ?? '').trim();
+		const query = term ? `?search=${encodeURIComponent(term)}` : '';
+		window.location.href = `/gigs${query}`;
+	};
+
+	searchButton?.addEventListener('click', navigateToGigsSearch);
+	searchInput?.addEventListener('keydown', (event) => {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			navigateToGigsSearch();
+		}
+	});
 };
 
 const renderHomeHowItWorks = (howItWorks) => {

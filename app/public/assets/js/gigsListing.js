@@ -45,6 +45,15 @@ const initGigsListing = () => {
 };
 
 const initFilters = () => {
+	const queryParams = new URLSearchParams(window.location.search);
+	const searchFromQuery = queryParams.get('search');
+	if (searchFromQuery !== null) {
+		const searchInput = document.getElementById('gigSearch');
+		if (searchInput) {
+			searchInput.value = searchFromQuery;
+		}
+	}
+
 	const filterInputs = document.querySelectorAll('#gigSearch, #gigDate, #gigLocation, #gigHourlyRate, [id^="category-"]');
 
 	filterInputs.forEach((input) => {

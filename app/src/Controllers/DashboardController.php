@@ -10,10 +10,12 @@ use App\Services\GigService;
 use App\ViewModels\AdminDashboardViewModel;
 use App\ViewModels\FreelancerDashboardViewModel;
 use App\ViewModels\FreelancerSubmissionsViewModel;
+use App\ViewModels\AdminSubmissionReviewViewModel;
 use App\ViewModels\AdminGigPostingViewModel;
 use App\ViewModels\AdminGigEditingViewModel;
 use App\ViewModels\AdminGigListingViewModel;
 use App\Services\SubmissionService;
+use App\Services\Interfaces\ISubmissionService;
 
 /**
  * DashboardController handles dashboard routes and gig management.
@@ -90,6 +92,42 @@ class DashboardController extends Controller
     }
 
     /**
+     * Render submissions received for gigs owned by the production house.
+     */
+    public function showProductionHouseSubmissions(array $params = []): void
+    {
+        $this->requireRole([RoleType::PRODUCTION_HOUSE->value]);
+
+        $submissions = $this->getSubmissionService()->getProductionHouseSubmissions($this->getAuthenticatedOwnerId());
+
+        $this->renderProductionHouseSubmissions(
+            $submissions,
+            $this->consumeSubmissionFlashMessage('production_submission_review_success_message'),
+            $this->consumeSubmissionFlashMessage('production_submission_review_error_message')
+        );
+    }
+
+    /**
+     * Handle accept or reject decisions for a submission.
+     */
+    public function handleProductionHouseSubmissionReview(array $params = []): void
+    {
+        $this->requireRole([RoleType::PRODUCTION_HOUSE->value]);
+
+        $submissionId = (int) ($params['id'] ?? 0);
+
+        if ($submissionId <= 0) {
+            $this->redirect('/dashboard/submissions/received');
+        }
+
+        $decision = (string) ($_POST['decision'] ?? '');
+        $result = $this->getSubmissionService()->reviewSubmission($submissionId, $this->getAuthenticatedOwnerId(), $decision);
+        $this->flashProductionHouseSubmissionReviewResult($result, 'Submission reviewed successfully.', 'Unable to review this submission right now.');
+
+        $this->redirect('/dashboard/submissions/received');
+    }
+
+    /**
      * Withdraw a pending freelancer submission.
      */
     public function handleFreelancerSubmissionWithdrawal(array $params = []): void
@@ -115,13 +153,7 @@ class DashboardController extends Controller
     {
         $this->requireRole([RoleType::PRODUCTION_HOUSE->value]);
 
-        $ownerId = $this->getAuthenticatedOwnerId();
-        $ownerName = $this->getAuthenticatedOwnerName();
-        
-        $service = new GigService(Config::pdo());
-        $gigs = $service->findByOwnerId($ownerId);
-
-        $viewModel = AdminGigListingViewModel::createForGigs($gigs, $ownerName);
+        $viewModel = $this->buildProductionHouseGigListingViewModel();
 
         include __DIR__ . '/../Views/dashboards/admin/gigListing.php';
     }
@@ -147,9 +179,8 @@ class DashboardController extends Controller
     {
         $this->requireRole([RoleType::PRODUCTION_HOUSE->value]);
 
-        $service = new GigService(Config::pdo());
         $ownerId = $this->getAuthenticatedOwnerId();
-        $result = $service->create($ownerId, $_POST, $_FILES['image'] ?? []);
+        $result = $this->getGigService()->create($ownerId, $_POST, $_FILES['image'] ?? []);
 
         $this->handleGigServiceResult($result, $params, 'post');
     }
@@ -162,13 +193,10 @@ class DashboardController extends Controller
         $this->requireRole([RoleType::PRODUCTION_HOUSE->value]);
 
         $gigId = $this->extractAndValidateGigId($params);
-        $ownerId = $this->getAuthenticatedOwnerId();
-
-        $service = new GigService(Config::pdo());
-        $gig = $service->findByIdAndVerifyOwnership($gigId, $ownerId);
+        $gig = $this->findOwnedGigOrRedirect($gigId);
 
         if ($gig === null) {
-            $this->redirect('/dashboard/gigs');
+            return;
         }
 
         $viewModel = AdminGigEditingViewModel::createWithGig($gig);
@@ -187,15 +215,13 @@ class DashboardController extends Controller
 
         $gigId = $this->extractAndValidateGigId($params);
         $ownerId = $this->getAuthenticatedOwnerId();
-
-        $service = new GigService(Config::pdo());
-        $existingGig = $service->findByIdAndVerifyOwnership($gigId, $ownerId);
+        $existingGig = $this->findOwnedGigOrRedirect($gigId);
 
         if ($existingGig === null) {
-            $this->redirect('/dashboard/gigs');
+            return;
         }
 
-        $result = $service->update($gigId, $ownerId, $_POST, $_FILES['image'] ?? [], $existingGig->getImageUrl());
+        $result = $this->getGigService()->update($gigId, $ownerId, $_POST, $_FILES['image'] ?? [], $existingGig->getImageUrl());
 
         $this->handleGigServiceResultWithGig($result, $existingGig, 'edit');
     }
@@ -212,8 +238,7 @@ class DashboardController extends Controller
         $gigId = $this->extractAndValidateGigId($params);
         $ownerId = $this->getAuthenticatedOwnerId();
 
-        $service = new GigService(Config::pdo());
-        $service->delete($gigId, $ownerId);
+        $this->getGigService()->delete($gigId, $ownerId);
 
         $this->redirectToGigListingWithSuccess('Gig deleted successfully.');
     }
@@ -358,9 +383,44 @@ class DashboardController extends Controller
     /**
      * Build a submission service instance.
      */
-    private function getSubmissionService(): SubmissionService
+    private function getSubmissionService(): ISubmissionService
     {
         return new SubmissionService(Config::pdo());
+    }
+
+    /**
+     * Build a gig service instance.
+     */
+    private function getGigService(): GigService
+    {
+        return new GigService(Config::pdo());
+    }
+
+    /**
+     * Resolve a gig and ensure ownership; redirect when unavailable.
+     */
+    private function findOwnedGigOrRedirect(int $gigId): ?Gig
+    {
+        $gig = $this->getGigService()->findByIdAndVerifyOwnership($gigId, $this->getAuthenticatedOwnerId());
+
+        if ($gig === null) {
+            $this->redirect('/dashboard/gigs');
+            return null;
+        }
+
+        return $gig;
+    }
+
+    /**
+     * Build the production house listing view model.
+     */
+    private function buildProductionHouseGigListingViewModel(): AdminGigListingViewModel
+    {
+        $ownerId = $this->getAuthenticatedOwnerId();
+        $ownerName = $this->getAuthenticatedOwnerName();
+        $gigs = $this->getGigService()->findByOwnerId($ownerId);
+
+        return AdminGigListingViewModel::createForGigs($gigs, $ownerName);
     }
 
     /**
@@ -395,5 +455,28 @@ class DashboardController extends Controller
         }
 
         $_SESSION['submission_error_message'] = (string) (($result['errors']['general'] ?? $errorFallback));
+    }
+
+    /**
+     * Render the production house submissions page.
+     */
+    private function renderProductionHouseSubmissions(array $submissions, ?string $successMessage = null, ?string $errorMessage = null): void
+    {
+        $viewModel = AdminSubmissionReviewViewModel::createForProductionHouseSubmissions($submissions);
+
+        include __DIR__ . '/../Views/dashboards/admin/submissions.php';
+    }
+
+    /**
+     * Store production house submission review feedback in session.
+     */
+    private function flashProductionHouseSubmissionReviewResult(array $result, string $successFallback, string $errorFallback): void
+    {
+        if (($result['success'] ?? false) === true) {
+            $_SESSION['production_submission_review_success_message'] = (string) ($result['message'] ?? $successFallback);
+            return;
+        }
+
+        $_SESSION['production_submission_review_error_message'] = (string) (($result['errors']['general'] ?? $errorFallback));
     }
 }

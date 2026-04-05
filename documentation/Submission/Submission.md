@@ -1,12 +1,13 @@
 # Submission
 
 ## Purpose
-Let freelancers apply to gigs, track the status of their submissions, and withdraw pending applications before a production house acts on them.
+Let freelancers apply to gigs, track the status of their submissions, withdraw pending applications, and let admins review applications with synchronized gig status updates.
 
 ## Access Control
 - **Applying to a gig**: Freelancer users only
 - **Viewing submissions**: Freelancer users only
 - **Withdrawing a submission**: Freelancer users only, and only while the submission is `pending`
+- **Reviewing submissions**: Admin users only
 
 ## Controller Files Used
 - [app/src/Controllers/GigController.php](../../app/src/Controllers/GigController.php)
@@ -18,6 +19,8 @@ Let freelancers apply to gigs, track the status of their submissions, and withdr
 - `GigController::handleGigApplication()`
 - `DashboardController::showFreelancerSubmissions()`
 - `DashboardController::handleFreelancerSubmissionWithdrawal()`
+- `DashboardController::showAdminSubmissionReview()`
+- `DashboardController::handleAdminSubmissionReview()`
 - `Controller::requireRole()`
 - `Controller::redirect()`
 
@@ -29,6 +32,8 @@ Let freelancers apply to gigs, track the status of their submissions, and withdr
 - `SubmissionService::applyToGig(int $gigId, int $userId): array`
 - `SubmissionService::getFreelancerSubmissions(int $userId): array`
 - `SubmissionService::withdrawSubmission(int $submissionId, int $userId): array`
+- `SubmissionService::getAdminReviewSubmissions(): array`
+- `SubmissionService::reviewSubmission(int $submissionId, string $decision): array`
 
 ## Repository Files Used
 - [app/src/Repositories/SubmissionRepository.php](../../app/src/Repositories/SubmissionRepository.php)
@@ -63,15 +68,19 @@ Let freelancers apply to gigs, track the status of their submissions, and withdr
 ## ViewModel Files Used
 - [app/src/ViewModels/GigDetailViewModel.php](../../app/src/ViewModels/GigDetailViewModel.php)
 - [app/src/ViewModels/FreelancerSubmissionsViewModel.php](../../app/src/ViewModels/FreelancerSubmissionsViewModel.php)
+- [app/src/ViewModels/AdminSubmissionReviewViewModel.php](../../app/src/ViewModels/AdminSubmissionReviewViewModel.php)
 
 ### Methods Used
 - `GigDetailViewModel::createFromGig()`
 - `FreelancerSubmissionsViewModel::createFromSubmissions()`
+- `AdminSubmissionReviewViewModel::createFromSubmissions()`
 
 ## View Files Used
 - [app/src/Views/gigs/gigDetail.php](../../app/src/Views/gigs/gigDetail.php)
 - [app/src/Views/dashboards/freelancer/submissions.php](../../app/src/Views/dashboards/freelancer/submissions.php)
+- [app/src/Views/dashboards/admin/submissions.php](../../app/src/Views/dashboards/admin/submissions.php)
 - [app/src/Views/dashboards/freelancerDashboard.php](../../app/src/Views/dashboards/freelancerDashboard.php)
+- [app/src/Views/dashboards/adminDashboard.php](../../app/src/Views/dashboards/adminDashboard.php)
 - [app/src/Views/partials/navbars/freelanceNavbar.php](../../app/src/Views/partials/navbars/freelanceNavbar.php)
 
 ## Flow
@@ -85,11 +94,16 @@ Let freelancers apply to gigs, track the status of their submissions, and withdr
 8. On success, the service creates a `pending` submission.
 9. The freelancer can open `/dashboard/submissions` to review status history.
 10. Pending submissions can be withdrawn from the submissions page.
+11. Admin users can open `/dashboard/submissions/review` to accept or reject pending submissions.
+12. Accepting a submission closes the gig and rejects remaining pending submissions for the same gig.
+13. Rejecting a submission closes the gig when no pending submissions remain.
 
 ## URLs
 - `POST /gigs/{id}/apply` - Apply to a gig
 - `GET /dashboard/submissions` - View all submission records for the authenticated freelancer
 - `POST /dashboard/submissions/{id}/withdraw` - Withdraw a pending submission
+- `GET /dashboard/submissions/review` - Review submissions as an admin
+- `POST /dashboard/submissions/{id}/review` - Accept or reject a pending submission
 
 ## Submission Rules
 - A freelancer can only apply if they are authenticated and have a freelancer profile.
@@ -98,6 +112,9 @@ Let freelancers apply to gigs, track the status of their submissions, and withdr
 - New applications are created with `pending` status.
 - Only `pending` submissions can be withdrawn.
 - Accepted or rejected submissions remain visible but cannot be withdrawn.
+- Admin review is limited to `pending` submissions.
+- Accepting a submission closes the related gig and rejects other pending submissions for that gig.
+- Rejecting a submission closes the gig when no pending submissions remain.
 
 ## Error Handling
 - **Authentication**: Unauthenticated users are redirected to `/signin`.
@@ -111,3 +128,6 @@ Let freelancers apply to gigs, track the status of their submissions, and withdr
 - Each submission references a gig and a freelancer.
 - The initial status is `pending`.
 - Withdrawn submissions are deleted, so the record disappears from the freelancer submission list.
+
+## Related Pages
+- [Admin Review](AdminReview.md) - Admin accept/reject workflow for pending submissions

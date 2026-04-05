@@ -14,5 +14,6 @@ This folder contains feature-by-feature documentation for the main application f
 - [Dashboard](Dashboard/Dashboard.md)
 - [Gig](Gig/Gig.md)
 - [Submission](Submission/Submission.md)
+- [Submission Admin Review](Submission/AdminReview.md)
 - [Profile](Profile/Profile.md)
 - [Settings](Settings/Settings.md)

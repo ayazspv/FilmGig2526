@@ -18,4 +18,14 @@ interface ISubmissionService
      * Withdraw a pending submission.
      */
     public function withdrawSubmission(int $submissionId, int $userId): array;
+
+    /**
+     * Return submissions for gigs owned by a production house user.
+     */
+    public function getProductionHouseSubmissions(int $ownerUserId): array;
+
+    /**
+     * Accept or reject a pending submission.
+     */
+    public function reviewSubmission(int $submissionId, int $ownerUserId, string $decision): array;
 }

@@ -14,6 +14,16 @@ It contains:
 1. Install Docker Desktop on Windows or Mac, or Docker Engine on Linux.
 1. Clone the project
 
+## Login
+
+Login as a production house
+username: production
+password: secret123
+
+Login as a freelancer
+username: freelancer
+password: secret123
+
 ## Usage
 
 In a terminal, from the cloned project folder, run:

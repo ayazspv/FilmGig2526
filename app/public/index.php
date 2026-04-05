@@ -12,6 +12,7 @@ $router = new Router();
 
 // Non-auth routes
 $router->addRoute('GET', '/', ['App\Controllers\HomeController', 'index']);
+$router->addRoute('GET', '/api/home', ['App\Controllers\HomeController', 'apiIndex']);
 
 // Auth routes
 $router->addRoute('GET', '/signup', ['App\Controllers\AuthController', 'showSignupForm']);
@@ -28,6 +29,7 @@ $router->addRoute('POST', '/forget-password', ['App\Controllers\AuthController',
 
 // Dashboard routes
 $router->addRoute('GET', '/dashboard', ['App\Controllers\DashboardController', 'showDashboard']);
+$router->addRoute('GET', '/api/dashboard', ['App\Controllers\DashboardController', 'apiDashboard']);
 
 $router->addRoute('GET', '/dashboard/gigs', ['App\Controllers\DashboardController', 'showProductionHouseGigListing']);
 $router->addRoute('GET', '/dashboard/gigs/new', ['App\Controllers\DashboardController', 'showProductionHouseGigPosting']);

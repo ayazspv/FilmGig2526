@@ -58,4 +58,30 @@ class FreelancerDashboardViewModel
             ],
         );
     }
+
+    public static function createFromData(string $pageTitle, string $badgeLabel, string $heroDescription, array $stats, array $applications, array $recommendedGigs, array $recentActions): self
+    {
+        return new self(
+            pageTitle: $pageTitle,
+            badgeLabel: $badgeLabel,
+            heroDescription: $heroDescription,
+            stats: $stats,
+            applications: $applications,
+            recommendedGigs: $recommendedGigs,
+            recentActions: $recentActions,
+        );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'pageTitle' => $this->pageTitle,
+            'badgeLabel' => $this->badgeLabel,
+            'heroDescription' => $this->heroDescription,
+            'stats' => $this->stats,
+            'applications' => $this->applications,
+            'recommendedGigs' => $this->recommendedGigs,
+            'recentActions' => $this->recentActions,
+        ];
+    }
 }

@@ -52,6 +52,7 @@ class GigService extends Service implements IGigService
     {
         // Normalize and validate input
         $normalized = $this->normalizeInput($input);
+        $normalized['status'] = GigStatus::ACTIVE->value;
         $errors = $this->validateInput($normalized);
 
         if (!empty($errors)) {

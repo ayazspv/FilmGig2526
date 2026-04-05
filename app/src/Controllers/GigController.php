@@ -129,7 +129,12 @@ class GigController extends Controller
             }, explode(',', (string) $_GET['categories']))))
             : [];
 
-        $filteredGigs = array_filter($allGigs, static function ($gig) use ($location, $date, $minimumRate, $categories, $normalizeCategory) {
+        $filteredGigs = array_values(array_filter($allGigs, static function ($gig) use ($location, $date, $minimumRate, $categories, $normalizeCategory) {
+            // Only expose active gigs in listing API.
+            if (strtolower((string) $gig->getStatus()) !== 'active') {
+                return false;
+            }
+
             // Filter by location
             if ($location && stripos($gig->getLocation(), $location) === false) {
                 return false;
@@ -151,7 +156,7 @@ class GigController extends Controller
             }
 
             return true;
-        });
+        }));
 
         $gigsData = array_map(static function ($gig) {
             return [

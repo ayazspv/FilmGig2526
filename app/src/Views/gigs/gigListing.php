@@ -1,6 +1,7 @@
 <?php
 $pageTitle = $viewModel->pageTitle;
-$pageScripts = ['/assets/js/gigsListing.js'];
+$gigsListingScriptVersion = (string) (@filemtime(__DIR__ . '/../../../public/assets/js/gigsListing.js') ?: time());
+$pageScripts = ['/assets/js/gigsListing.js?v=' . $gigsListingScriptVersion];
 $filters = $viewModel->filters;
 $gigs = $viewModel->gigs;
 ?>

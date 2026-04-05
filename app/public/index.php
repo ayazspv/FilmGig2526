@@ -51,6 +51,7 @@ $router->addRoute('POST', '/profile', ['App\Controllers\ProfileController', 'han
 $router->addRoute('GET', '/settings', ['App\Controllers\SettingsController', 'showSettings']);
 
 $router->addRoute('GET', '/gigs', ['App\Controllers\GigController', 'showGigListing']);
+$router->addRoute('GET', '/api/gigs', ['App\Controllers\GigController', 'apiGigs']);
 $router->addRoute('GET', '/gigs/{id}', ['App\Controllers\GigController', 'showGigDetail']);
 $router->addRoute('POST', '/gigs/{id}/apply', ['App\Controllers\GigController', 'handleGigApplication']);
 

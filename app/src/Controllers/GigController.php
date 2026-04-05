@@ -90,4 +90,73 @@ class GigController extends Controller
 
         $this->redirect('/gigs/' . $gigId);
     }
+
+    /**
+     * Return all gigs as JSON for client-side rendering.
+     */
+    public function apiGigs(array $params = []): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        $gigRepository = new GigRepository(Config::pdo());
+        $allGigs = $gigRepository->findAll();
+
+        // Apply filters from query parameters
+        $location = $_GET['location'] ?? '';
+        $date = $_GET['date'] ?? '';
+        $minimumRate = (float) ($_GET['minimumRate'] ?? 0);
+        $normalizeCategory = static fn(string $category): string => match (strtolower(trim($category))) {
+            'audio' => 'sound',
+            default => strtolower(trim($category)),
+        };
+
+        $categories = isset($_GET['categories'])
+            ? array_values(array_filter(array_map(static fn(string $category): string => match (strtolower(trim($category))) {
+                'audio' => 'sound',
+                default => strtolower(trim($category)),
+            }, explode(',', (string) $_GET['categories']))))
+            : [];
+
+        $filteredGigs = array_filter($allGigs, static function ($gig) use ($location, $date, $minimumRate, $categories, $normalizeCategory) {
+            // Filter by location
+            if ($location && stripos($gig->getLocation(), $location) === false) {
+                return false;
+            }
+
+            // Filter by date
+            if ($date && $gig->getStartDate() < $date) {
+                return false;
+            }
+
+            // Filter by minimum rate
+            if ($minimumRate > 0 && $gig->getPayRate() < $minimumRate) {
+                return false;
+            }
+
+            // Filter by categories
+            if (!empty($categories) && !in_array($normalizeCategory($gig->getCategory()), $categories, true)) {
+                return false;
+            }
+
+            return true;
+        });
+
+        $gigsData = array_map(static function ($gig) {
+            return [
+                'gigId' => $gig->getGigId(),
+                'title' => $gig->getTitle(),
+                'description' => $gig->getDescription(),
+                'category' => $gig->getCategory(),
+                'location' => $gig->getLocation(),
+                'startDate' => $gig->getStartDate(),
+                'payRate' => $gig->getPayRate(),
+                'rateType' => $gig->getRateType(),
+                'imageUrl' => $gig->getImageUrl(),
+                'status' => $gig->getStatus(),
+                'detailUrl' => '/gigs/' . $gig->getGigId(),
+            ];
+        }, $filteredGigs);
+
+        echo json_encode(['gigs' => $gigsData], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
 }

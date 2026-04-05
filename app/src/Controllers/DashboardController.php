@@ -3,21 +3,23 @@
 namespace App\Controllers;
 
 use App\Enums\RoleType;
+use App\Framework\Controller;
 use App\ViewModels\AdminDashboardViewModel;
 use App\ViewModels\FreelancerDashboardViewModel;
 use App\ViewModels\AdminGigPostingViewModel;
 use App\ViewModels\AdminGigEditingViewModel;
 use App\ViewModels\AdminGigListingViewModel;
 
-class DashboardController
+class DashboardController extends Controller
 {
+    /**
+     * Route authenticated users to the correct dashboard by role.
+     */
     public function showDashboard(array $params = []): void
     {
-        if (!$this->ensureAuthenticated()) {
-            return;
-        }
+        $this->requireAuthentication();
 
-        $role = (string) ($_SESSION['auth_user_role'] ?? '');
+        $role = $this->authUserRole();
 
         if ($role === RoleType::ADMIN->value || $role === RoleType::PRODUCTION_HOUSE->value) {
             $this->showAdminDashboard($params);
@@ -32,94 +34,73 @@ class DashboardController
         $this->denyAndRedirectToSignin();
     }
 
+    /**
+     * Render the admin or production house dashboard.
+     */
     public function showAdminDashboard(array $params = []): void
     {
-        if (!$this->ensureRole([RoleType::ADMIN->value, RoleType::PRODUCTION_HOUSE->value])) {
-            return;
-        }
+        $this->requireRole([RoleType::ADMIN->value, RoleType::PRODUCTION_HOUSE->value]);
 
         $viewModel = AdminDashboardViewModel::createAdminDefault();
 
         include __DIR__ . '/../Views/dashboards/adminDashboard.php';
     }
 
+    /**
+     * Render the freelancer dashboard.
+     */
     public function showFreelancerDashboard(array $params = []): void
     {
-        if (!$this->ensureRole([RoleType::FREELANCER->value])) {
-            return;
-        }
+        $this->requireRole([RoleType::FREELANCER->value]);
 
         $viewModel = FreelancerDashboardViewModel::createFreelancerDefault();
 
         include __DIR__ . '/../Views/dashboards/freelancerDashboard.php';
     }
 
+    /**
+     * Render admin gig listing screen.
+     */
     public function showAdminGigListing(array $params = []): void
     {
-        if (!$this->ensureRole([RoleType::ADMIN->value, RoleType::PRODUCTION_HOUSE->value])) {
-            return;
-        }
+        $this->requireRole([RoleType::ADMIN->value, RoleType::PRODUCTION_HOUSE->value]);
 
         $viewModel = AdminGigListingViewModel::createDefault();
 
         include __DIR__ . '/../Views/dashboards/admin/gigListing.php';
     }
 
+    /**
+     * Render admin gig posting screen.
+     */
     public function showAdminGigPosting(array $params = []): void
     {
-        if (!$this->ensureRole([RoleType::ADMIN->value, RoleType::PRODUCTION_HOUSE->value])) {
-            return;
-        }
+        $this->requireRole([RoleType::ADMIN->value, RoleType::PRODUCTION_HOUSE->value]);
 
         $viewModel = AdminGigPostingViewModel::createDefault();
 
         include __DIR__ . '/../Views/dashboards/admin/gigPosting.php';
     }
 
+    /**
+     * Render admin gig editing screen.
+     */
     public function showAdminGigEditing(array $params = []): void
     {
-        if (!$this->ensureRole([RoleType::ADMIN->value, RoleType::PRODUCTION_HOUSE->value])) {
-            return;
-        }
+        $this->requireRole([RoleType::ADMIN->value, RoleType::PRODUCTION_HOUSE->value]);
 
         $viewModel = AdminGigEditingViewModel::createDefault();
 
         include __DIR__ . '/../Views/dashboards/admin/gigEditing.php';
     }
 
-    private function ensureAuthenticated(): bool
-    {
-        if (!empty($_SESSION['auth_user_id']) && !empty($_SESSION['auth_user_role'])) {
-            return true;
-        }
-
-        header('Location: /signin');
-        exit;
-    }
-
-    private function ensureRole(array $allowedRoles): bool
-    {
-        if (!$this->ensureAuthenticated()) {
-            return false;
-        }
-
-        $currentRole = (string) ($_SESSION['auth_user_role'] ?? '');
-
-        if (in_array($currentRole, $allowedRoles, true)) {
-            return true;
-        }
-
-        header('Location: /dashboard');
-        exit;
-    }
-
+    /**
+     * Destroy session and send user back to signin.
+     */
     private function denyAndRedirectToSignin(): void
     {
-        session_unset();
-        session_destroy();
-
-        header('Location: /signin');
-        exit;
+        $this->destroySession();
+        $this->redirect('/signin');
     }
 
 }

@@ -3,18 +3,20 @@
 namespace App\Controllers;
 
 use App\Enums\RoleType;
+use App\Framework\Controller;
 use App\ViewModels\AdminSettingsViewModel;
 use App\ViewModels\FreelancerSettingsViewModel;
 
-class SettingsController
+class SettingsController extends Controller
 {
+    /**
+     * Route authenticated users to the correct settings page by role.
+     */
     public function showSettings(array $params = []): void
     {
-        if (!$this->ensureAuthenticated()) {
-            return;
-        }
+        $this->requireAuthentication();
 
-        $role = (string) ($_SESSION['auth_user_role'] ?? '');
+        $role = $this->authUserRole();
 
         if ($role === RoleType::ADMIN->value || $role === RoleType::PRODUCTION_HOUSE->value) {
             $this->showAdminSettings($params);
@@ -26,55 +28,31 @@ class SettingsController
             return;
         }
 
-        header('Location: /signin');
-        exit;
+        $this->redirect('/signin');
     }
 
+    /**
+     * Render the admin or production house settings page.
+     */
     public function showAdminSettings(array $params = []): void
     {
-        if (!$this->ensureRole([RoleType::ADMIN->value, RoleType::PRODUCTION_HOUSE->value])) {
-            return;
-        }
+        $this->requireRole([RoleType::ADMIN->value, RoleType::PRODUCTION_HOUSE->value]);
 
         $viewModel = AdminSettingsViewModel::createDefault();
 
         include __DIR__ . '/../Views/dashboards/admin/settings.php';
     }
 
+    /**
+     * Render the freelancer settings page.
+     */
     public function showFreelancerSettings(array $params = []): void
     {
-        if (!$this->ensureRole([RoleType::FREELANCER->value])) {
-            return;
-        }
+        $this->requireRole([RoleType::FREELANCER->value]);
 
         $viewModel = FreelancerSettingsViewModel::createDefault();
 
         include __DIR__ . '/../Views/dashboards/freelancer/settings.php';
     }
 
-    private function ensureAuthenticated(): bool
-    {
-        if (!empty($_SESSION['auth_user_id']) && !empty($_SESSION['auth_user_role'])) {
-            return true;
-        }
-
-        header('Location: /signin');
-        exit;
-    }
-
-    private function ensureRole(array $allowedRoles): bool
-    {
-        if (!$this->ensureAuthenticated()) {
-            return false;
-        }
-
-        $currentRole = (string) ($_SESSION['auth_user_role'] ?? '');
-
-        if (in_array($currentRole, $allowedRoles, true)) {
-            return true;
-        }
-
-        header('Location: /dashboard');
-        exit;
-    }
 }

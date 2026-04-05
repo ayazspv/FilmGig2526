@@ -297,18 +297,6 @@ class SignupService extends Service implements ISignupService
     }
 
     /**
-     * Return a standardized failure payload.
-     */
-    private function buildFailureResult(array $errors, array $input): array
-    {
-        return [
-            'success' => false,
-            'errors' => $errors,
-            'input' => $input,
-        ];
-    }
-
-    /**
      * Return a standardized success payload.
      */
     private function buildSuccessResult(int $userId, string $role): array

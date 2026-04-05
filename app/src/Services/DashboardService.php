@@ -100,34 +100,19 @@ class DashboardService extends Service
         usort($submissions, static fn(Submission $left, Submission $right): int => strcmp($right->getSubmittedAt(), $left->getSubmittedAt()));
 
         $availableGigs = $this->findAvailableGigsForFreelancer($submissions);
-        $pendingCount = $this->countSubmissionsByStatus($submissions, SubmissionStatus::PENDING->value);
-        $acceptedCount = $this->countSubmissionsByStatus($submissions, SubmissionStatus::ACCEPTED->value);
-        $rejectedCount = $this->countSubmissionsByStatus($submissions, SubmissionStatus::REJECTED->value);
+        $stats = $this->buildFreelancerStats($submissions);
+        $applications = $this->buildFreelancerApplicationsSection($submissions);
+        $recommended = $this->buildFreelancerRecommendedSection($availableGigs);
+        $recentActions = $this->buildFreelancerRecentActionsSection($submissions);
 
         return FreelancerDashboardViewModel::createFromData(
             pageTitle: 'Freelancer Dashboard - FilmGig',
             badgeLabel: 'Freelancer Dashboard',
             heroDescription: 'Track opportunities, applications, and your ongoing projects.',
-            stats: [
-                ['label' => 'Applications', 'value' => (string) count($submissions), 'note' => 'All submissions', 'id' => 'pendingSubmissions'],
-                ['label' => 'Pending Reviews', 'value' => (string) $pendingCount, 'note' => 'Waiting on production houses'],
-                ['label' => 'Accepted', 'value' => (string) $acceptedCount, 'note' => 'Successful applications'],
-                ['label' => 'Rejected', 'value' => (string) $rejectedCount, 'note' => 'Closed responses'],
-            ],
-            applications: [
-                'title' => 'My Applications',
-                'columns' => ['Gig Title', 'Category', 'Location', 'Status', 'Submitted At', 'Actions'],
-                'rows' => array_map(fn(Submission $submission): array => $this->mapFreelancerSubmissionToRow($submission), $submissions),
-            ],
-            recommendedGigs: [
-                'title' => 'Recommended Gigs',
-                'columns' => ['Title', 'Category', 'Location', 'Pay Rate', 'Actions'],
-                'rows' => array_map(fn(Gig $gig): array => $this->mapRecommendedGigToRow($gig), array_slice($availableGigs, 0, 4)),
-            ],
-            recentActions: [
-                'title' => 'Recent Application Updates',
-                'items' => array_map(fn(Submission $submission): array => $this->mapSubmissionToListItem($submission, true), array_slice($submissions, 0, 5)),
-            ],
+            stats: $stats,
+            applications: $applications,
+            recommendedGigs: $recommended,
+            recentActions: $recentActions,
         )->toArray();
     }
 
@@ -168,7 +153,73 @@ class DashboardService extends Service
      */
     private function buildProductionStats(array $gigs, array $submissions, string $role): array
     {
-        $stats = [
+        $stats = $this->buildBaseProductionStats($gigs, $submissions, $role);
+
+        if ($role === RoleType::ADMIN->value) {
+            $stats[] = $this->buildProductionHousesStat();
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Build freelancer stats from submission totals.
+     */
+    private function buildFreelancerStats(array $submissions): array
+    {
+        $pendingCount = $this->countSubmissionsByStatus($submissions, SubmissionStatus::PENDING->value);
+        $acceptedCount = $this->countSubmissionsByStatus($submissions, SubmissionStatus::ACCEPTED->value);
+        $rejectedCount = $this->countSubmissionsByStatus($submissions, SubmissionStatus::REJECTED->value);
+
+        return [
+            ['label' => 'Applications', 'value' => (string) count($submissions), 'note' => 'All submissions', 'id' => 'pendingSubmissions'],
+            ['label' => 'Pending Reviews', 'value' => (string) $pendingCount, 'note' => 'Waiting on production houses'],
+            ['label' => 'Accepted', 'value' => (string) $acceptedCount, 'note' => 'Successful applications'],
+            ['label' => 'Rejected', 'value' => (string) $rejectedCount, 'note' => 'Closed responses'],
+        ];
+    }
+
+    /**
+     * Build the freelancer applications section payload.
+     */
+    private function buildFreelancerApplicationsSection(array $submissions): array
+    {
+        return [
+            'title' => 'My Applications',
+            'columns' => ['Gig Title', 'Category', 'Location', 'Status', 'Submitted At', 'Actions'],
+            'rows' => array_map(fn(Submission $submission): array => $this->mapFreelancerSubmissionToRow($submission), $submissions),
+        ];
+    }
+
+    /**
+     * Build the freelancer recommendations section payload.
+     */
+    private function buildFreelancerRecommendedSection(array $availableGigs): array
+    {
+        return [
+            'title' => 'Recommended Gigs',
+            'columns' => ['Title', 'Category', 'Location', 'Pay Rate', 'Actions'],
+            'rows' => array_map(fn(Gig $gig): array => $this->mapRecommendedGigToRow($gig), array_slice($availableGigs, 0, 4)),
+        ];
+    }
+
+    /**
+     * Build the freelancer recent actions section payload.
+     */
+    private function buildFreelancerRecentActionsSection(array $submissions): array
+    {
+        return [
+            'title' => 'Recent Application Updates',
+            'items' => array_map(fn(Submission $submission): array => $this->mapSubmissionToListItem($submission, true), array_slice($submissions, 0, 5)),
+        ];
+    }
+
+    /**
+     * Build base stats shared by admin and production dashboards.
+     */
+    private function buildBaseProductionStats(array $gigs, array $submissions, string $role): array
+    {
+        return [
             [
                 'label' => 'Active Gigs',
                 'value' => (string) count(array_filter($gigs, static fn(Gig $gig): bool => $gig->getStatus() === 'active')),
@@ -187,16 +238,18 @@ class DashboardService extends Service
                 'note' => 'Registered creators',
             ],
         ];
+    }
 
-        if ($role === RoleType::ADMIN->value) {
-            $stats[] = [
-                'label' => 'Production Houses',
-                'value' => (string) count($this->productionHouseRepository->findAll()),
-                'note' => 'Publishing gigs',
-            ];
-        }
-
-        return $stats;
+    /**
+     * Build the production-houses stat card used by admins.
+     */
+    private function buildProductionHousesStat(): array
+    {
+        return [
+            'label' => 'Production Houses',
+            'value' => (string) count($this->productionHouseRepository->findAll()),
+            'note' => 'Publishing gigs',
+        ];
     }
 
     /**

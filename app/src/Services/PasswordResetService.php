@@ -35,22 +35,8 @@ class PasswordResetService extends Service implements IPasswordResetService
 
         $user = $this->findUserByUsername($normalizedInput['username']);
 
-        if ($user === null) {
-            return $this->buildFailureResult(
-                ['general' => 'Unable to verify your account right now. Please try again later.'],
-                $normalizedInput
-            );
-        }
-
-        if (
-            $user === null
-            || strtolower($user->getEmail()) !== $normalizedInput['email']
-            || (string) $user->getKvkNr() !== $normalizedInput['kvkNr']
-        ) {
-            return $this->buildFailureResult(
-                ['general' => 'The username, email, and Chamber of Commerce number combination does not match any account.'],
-                $normalizedInput
-            );
+        if ($user === null || !$this->matchesIdentity($user, $normalizedInput)) {
+            return $this->buildIdentityFailureResult($user, $normalizedInput);
         }
 
         return $this->buildVerifySuccessResult($user->getUserId(), $user->getUsername(), $normalizedInput);
@@ -152,18 +138,6 @@ class PasswordResetService extends Service implements IPasswordResetService
     }
 
     /**
-     * Return a standardized failure payload.
-     */
-    private function buildFailureResult(array $errors, array $input): array
-    {
-        return [
-            'success' => false,
-            'errors' => $errors,
-            'input' => $input,
-        ];
-    }
-
-    /**
      * Return a standardized success payload for identity verification.
      */
     private function buildVerifySuccessResult(int $userId, string $username, array $input): array
@@ -174,6 +148,33 @@ class PasswordResetService extends Service implements IPasswordResetService
             'username' => $username,
             'input' => $input,
         ];
+    }
+
+    /**
+     * Check whether user data matches identity input.
+     */
+    private function matchesIdentity(object $user, array $input): bool
+    {
+        return strtolower($user->getEmail()) === $input['email']
+            && (string) $user->getKvkNr() === $input['kvkNr'];
+    }
+
+    /**
+     * Build the correct failure payload for identity verification.
+     */
+    private function buildIdentityFailureResult(?object $user, array $input): array
+    {
+        if ($user === null) {
+            return $this->buildFailureResult(
+                ['general' => 'Unable to verify your account right now. Please try again later.'],
+                $input
+            );
+        }
+
+        return $this->buildFailureResult(
+            ['general' => 'The username, email, and Chamber of Commerce number combination does not match any account.'],
+            $input
+        );
     }
 
     /**

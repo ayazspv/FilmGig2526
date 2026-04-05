@@ -28,6 +28,9 @@ class ProfileService extends Service implements IProfileService
     private ProductionHouseRepository $productionHouseRepository;
     private FreelancerRepository $freelancerRepository;
 
+    /**
+     * Build the profile service with repository dependencies.
+     */
     public function __construct(PDO $pdo)
     {
         parent::__construct($pdo);
@@ -36,6 +39,9 @@ class ProfileService extends Service implements IProfileService
         $this->freelancerRepository = new FreelancerRepository($pdo);
     }
 
+    /**
+     * Return editable profile data for admin and production users.
+     */
     public function getAdminProfileData(int $userId): array
     {
         $user = $this->userRepository->findById($userId);
@@ -60,6 +66,9 @@ class ProfileService extends Service implements IProfileService
         ];
     }
 
+    /**
+     * Return editable profile data for freelancer users.
+     */
     public function getFreelancerProfileData(int $userId): array
     {
         $user = $this->userRepository->findById($userId);
@@ -83,6 +92,9 @@ class ProfileService extends Service implements IProfileService
         ];
     }
 
+    /**
+     * Return read-only public profile data for production users.
+     */
     public function getProductionHousePublicProfileData(int $userId): ?array
     {
         if ($userId <= 0) {
@@ -109,6 +121,9 @@ class ProfileService extends Service implements IProfileService
         ];
     }
 
+    /**
+     * Return read-only public profile data for freelancer users.
+     */
     public function getFreelancerPublicProfileData(int $userId): ?array
     {
         if ($userId <= 0) {
@@ -134,6 +149,9 @@ class ProfileService extends Service implements IProfileService
         ];
     }
 
+    /**
+     * Update profile data for admin and production users.
+     */
     public function updateAdminProfile(int $userId, array $input, array $profileImageFile): array
     {
         $resolvedUser = $this->resolveUserForUpdate($userId);
@@ -156,12 +174,15 @@ class ProfileService extends Service implements IProfileService
         }
 
         if (!$this->persistAdminProfileUpdate($user, $normalizedInput)) {
-            return $this->failure('Unable to update your profile right now. Please try again.');
+            return $this->buildGeneralFailure('Unable to update your profile right now. Please try again.');
         }
 
         return $this->completeProfileUpdate($userId, $profileImageFile);
     }
 
+    /**
+     * Update profile data for freelancer users.
+     */
     public function updateFreelancerProfile(int $userId, array $input, array $profileImageFile): array
     {
         $resolvedUser = $this->resolveUserForUpdate($userId);
@@ -184,7 +205,7 @@ class ProfileService extends Service implements IProfileService
         }
 
         if (!$this->persistFreelancerProfileUpdate($user, $normalizedInput)) {
-            return $this->failure('Unable to update your profile right now. Please try again.');
+            return $this->buildGeneralFailure('Unable to update your profile right now. Please try again.');
         }
 
         return $this->completeProfileUpdate($userId, $profileImageFile);
@@ -198,7 +219,7 @@ class ProfileService extends Service implements IProfileService
         $user = $this->userRepository->findById($userId);
 
         if ($user === null) {
-            return ['user' => null, 'failure' => $this->failure('Unable to update your profile right now.')];
+            return ['user' => null, 'failure' => $this->buildGeneralFailure('Unable to update your profile right now.')];
         }
 
         return ['user' => $user, 'failure' => null];
@@ -296,7 +317,7 @@ class ProfileService extends Service implements IProfileService
     private function completeProfileUpdate(int $userId, array $profileImageFile): array
     {
         if (!$this->storeProfileImage($userId, $profileImageFile)) {
-            return $this->failure('Profile details saved, but we could not upload your profile picture.');
+            return $this->buildGeneralFailure('Profile details saved, but we could not upload your profile picture.');
         }
 
         return [
@@ -305,6 +326,9 @@ class ProfileService extends Service implements IProfileService
         ];
     }
 
+    /**
+     * Build default admin profile data.
+     */
     private function defaultAdminData(): array
     {
         return [
@@ -321,6 +345,9 @@ class ProfileService extends Service implements IProfileService
         ];
     }
 
+    /**
+     * Build default freelancer profile data.
+     */
     private function defaultFreelancerData(): array
     {
         return [
@@ -355,6 +382,9 @@ class ProfileService extends Service implements IProfileService
         return self::DEFAULT_ADMIN_PROFILE_IMAGE;
     }
 
+    /**
+     * Normalize editable input for admin and production users.
+     */
     private function normalizeAdminInput(array $input): array
     {
         return [
@@ -368,6 +398,9 @@ class ProfileService extends Service implements IProfileService
         ];
     }
 
+    /**
+     * Normalize editable input for freelancer users.
+     */
     private function normalizeFreelancerInput(array $input): array
     {
         return [
@@ -380,39 +413,25 @@ class ProfileService extends Service implements IProfileService
         ];
     }
 
+    /**
+     * Validate admin and production profile fields.
+     */
     private function validateAdminInput(User $currentUser, array $input): array
     {
         $errors = [];
 
-        if ($input['username'] === '') {
-            $errors['username'] = 'Username is required.';
-        } elseif (preg_match('/^[A-Za-z0-9.]+$/', $input['username']) !== 1) {
-            $errors['username'] = 'Username may only contain letters, numbers, and dots (.).';
-        }
-
-        if ($input['companyName'] === '') {
-            $errors['companyName'] = 'Company name is required.';
-        }
-
-        if ($input['contactName'] === '') {
-            $errors['contactName'] = 'Contact person name is required.';
-        }
-
-        if (!$this->isValidEmail($input['email'])) {
-            $errors['email'] = 'Please provide a valid email address.';
-        }
-
-        if ($input['address'] === '') {
-            $errors['address'] = 'Address is required.';
-        }
-
-        if ($input['website'] !== '' && filter_var($input['website'], FILTER_VALIDATE_URL) === false) {
-            $errors['website'] = 'Please provide a valid website URL.';
-        }
+        $this->validateUsernameField($input, $errors);
+        $this->validateAdminIdentityFields($input, $errors);
+        $this->validateEmailField($input, $errors);
+        $this->validateAddressField($input, $errors);
+        $this->validateWebsiteField($input, $errors);
 
         return array_merge($errors, $this->validateUserUniqueness($currentUser, $input['username'], $input['email']));
     }
 
+    /**
+     * Validate freelancer profile fields.
+     */
     private function validateFreelancerInput(User $currentUser, array $input): array
     {
         $errors = [];
@@ -442,6 +461,9 @@ class ProfileService extends Service implements IProfileService
         return array_merge($errors, $this->validateUserUniqueness($currentUser, $input['username'], $input['email']));
     }
 
+    /**
+     * Validate username and email uniqueness for one user.
+     */
     private function validateUserUniqueness(User $currentUser, string $username, string $email): array
     {
         $errors = [];
@@ -459,7 +481,217 @@ class ProfileService extends Service implements IProfileService
         return $errors;
     }
 
+    /**
+     * Validate a profile image upload.
+     */
     private function validateProfileImage(array $file): array
+    {
+        $metadataError = $this->validateProfileImageMetadata($file);
+
+        if ($metadataError !== null) {
+            return $metadataError;
+        }
+
+        return $this->validateProfileImageContent((string) ($file['tmp_name'] ?? ''));
+    }
+
+    /**
+     * Store a profile image for a user.
+     */
+    private function storeProfileImage(int $userId, array $file): bool
+    {
+        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+            return true;
+        }
+
+        if (!is_dir(self::PROFILE_UPLOAD_DIRECTORY) && !mkdir(self::PROFILE_UPLOAD_DIRECTORY, 0775, true) && !is_dir(self::PROFILE_UPLOAD_DIRECTORY)) {
+            return false;
+        }
+
+        $tmpPath = (string) ($file['tmp_name'] ?? '');
+        $imageInfo = @getimagesize($tmpPath);
+        $mimeType = (string) ($imageInfo['mime'] ?? '');
+        $extension = $this->imageMimeTypeToExtension($mimeType);
+
+        if ($extension === null) {
+            return false;
+        }
+
+        $this->deleteExistingProfileImages($userId);
+
+        $fileName = self::PROFILE_UPLOAD_PREFIX . $userId . '.' . $extension;
+        $targetPath = self::PROFILE_UPLOAD_DIRECTORY . '/' . $fileName;
+
+        return move_uploaded_file($tmpPath, $targetPath);
+    }
+
+    /**
+     * Delete any existing profile images for one user.
+     */
+    private function deleteExistingProfileImages(int $userId): void
+    {
+        $pattern = self::PROFILE_UPLOAD_DIRECTORY . '/' . self::PROFILE_UPLOAD_PREFIX . $userId . '.*';
+        $existingFiles = glob($pattern) ?: [];
+
+        foreach ($existingFiles as $existingFile) {
+            if (is_file($existingFile)) {
+                @unlink($existingFile);
+            }
+        }
+    }
+
+    /**
+     * Resolve the profile image URL for editable profile pages.
+     */
+    private function resolveProfileImageUrl(User $user): string
+    {
+        $pattern = self::PROFILE_UPLOAD_DIRECTORY . '/' . self::PROFILE_UPLOAD_PREFIX . $user->getUserId() . '.*';
+        $matches = glob($pattern) ?: [];
+
+        if (!empty($matches)) {
+            return '/assets/images/' . basename($matches[0]);
+        }
+
+        return $user->getRole() === 'freelancer'
+            ? self::DEFAULT_FREELANCER_PROFILE_IMAGE
+            : self::DEFAULT_ADMIN_PROFILE_IMAGE;
+    }
+
+    /**
+     * Update the base user record from normalized profile input.
+     */
+    private function updateUserRecord(User $currentUser, array $input): bool
+    {
+        $name = (string) ($input['contactName'] ?? $input['fullName'] ?? $currentUser->getName());
+
+        return $this->userRepository->update($currentUser->getUserId(), [
+            'username' => (string) ($input['username'] ?? $currentUser->getUsername()),
+            'name' => $name,
+            'email' => (string) ($input['email'] ?? $currentUser->getEmail()),
+            'password' => $currentUser->getPassword(),
+            'role' => $currentUser->getRole(),
+            'address' => (string) ($input['address'] ?? $currentUser->getAddress()),
+            'bio' => (string) ($input['bio'] ?? $currentUser->getBio()),
+            'kvkNr' => $currentUser->getKvkNr(),
+        ]);
+    }
+
+    /**
+     * Upsert a production house profile record.
+     */
+    private function upsertProductionHouseRecord(?ProductionHouse $productionHouse, int $userId, array $input): bool
+    {
+        $payload = [
+            'userId' => $userId,
+            'companyName' => (string) ($input['companyName'] ?? ''),
+            'website' => (string) ($input['website'] ?? ''),
+        ];
+
+        if ($productionHouse === null) {
+            return $this->productionHouseRepository->create($userId, $payload) > 0;
+        }
+
+        return $this->productionHouseRepository->update($productionHouse->getProductionHouseId(), $payload);
+    }
+
+    /**
+     * Upsert a freelancer profile record.
+     */
+    private function upsertFreelancerRecord(?Freelancer $freelancer, int $userId, string $dateOfBirth): bool
+    {
+        $payload = [
+            'userId' => $userId,
+            'dateOfBirth' => $dateOfBirth !== '' ? $dateOfBirth : null,
+        ];
+
+        if ($freelancer === null) {
+            return $this->freelancerRepository->create($userId, $payload) > 0;
+        }
+
+        return $this->freelancerRepository->update($freelancer->getFreelancerId(), $payload);
+    }
+
+    /**
+     * Check whether an email string is valid.
+     */
+    private function isValidEmail(string $email): bool
+    {
+        return $email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+    }
+
+    /**
+     * Check whether a date string matches YYYY-MM-DD.
+     */
+    private function isValidDate(string $value): bool
+    {
+        $date = DateTime::createFromFormat('Y-m-d', $value);
+
+        return $date !== false && $date->format('Y-m-d') === $value;
+    }
+
+    /**
+     * Validate the shared username field.
+     */
+    private function validateUsernameField(array $input, array &$errors): void
+    {
+        if ($input['username'] === '') {
+            $errors['username'] = 'Username is required.';
+            return;
+        }
+
+        if (preg_match('/^[A-Za-z0-9.]+$/', $input['username']) !== 1) {
+            $errors['username'] = 'Username may only contain letters, numbers, and dots (.).';
+        }
+    }
+
+    /**
+     * Validate shared contact fields for admin and production users.
+     */
+    private function validateAdminIdentityFields(array $input, array &$errors): void
+    {
+        if ($input['companyName'] === '') {
+            $errors['companyName'] = 'Company name is required.';
+        }
+
+        if ($input['contactName'] === '') {
+            $errors['contactName'] = 'Contact person name is required.';
+        }
+    }
+
+    /**
+     * Validate the shared email field.
+     */
+    private function validateEmailField(array $input, array &$errors): void
+    {
+        if (!$this->isValidEmail($input['email'])) {
+            $errors['email'] = 'Please provide a valid email address.';
+        }
+    }
+
+    /**
+     * Validate the shared address field.
+     */
+    private function validateAddressField(array $input, array &$errors): void
+    {
+        if ($input['address'] === '') {
+            $errors['address'] = 'Address is required.';
+        }
+    }
+
+    /**
+     * Validate the optional website field for admin and production users.
+     */
+    private function validateWebsiteField(array $input, array &$errors): void
+    {
+        if ($input['website'] !== '' && filter_var($input['website'], FILTER_VALIDATE_URL) === false) {
+            $errors['website'] = 'Please provide a valid website URL.';
+        }
+    }
+
+    /**
+     * Validate upload metadata for a profile image.
+     */
+    private function validateProfileImageMetadata(array $file): ?array
     {
         if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
             return [];
@@ -477,7 +709,14 @@ class ProfileService extends Service implements IProfileService
             return ['profileImage' => 'Profile image must be smaller than 5 MB.'];
         }
 
-        $tmpPath = (string) ($file['tmp_name'] ?? '');
+        return null;
+    }
+
+    /**
+     * Validate image content and MIME type for a profile image.
+     */
+    private function validateProfileImageContent(string $tmpPath): array
+    {
         $imageInfo = @getimagesize($tmpPath);
 
         if ($imageInfo === false) {
@@ -491,134 +730,5 @@ class ProfileService extends Service implements IProfileService
         }
 
         return [];
-    }
-
-    private function storeProfileImage(int $userId, array $file): bool
-    {
-        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
-            return true;
-        }
-
-        if (!is_dir(self::PROFILE_UPLOAD_DIRECTORY) && !mkdir(self::PROFILE_UPLOAD_DIRECTORY, 0775, true) && !is_dir(self::PROFILE_UPLOAD_DIRECTORY)) {
-            return false;
-        }
-
-        $tmpPath = (string) ($file['tmp_name'] ?? '');
-        $imageInfo = @getimagesize($tmpPath);
-        $mimeType = (string) ($imageInfo['mime'] ?? '');
-        $extension = $this->mimeTypeToExtension($mimeType);
-
-        if ($extension === null) {
-            return false;
-        }
-
-        $this->deleteExistingProfileImages($userId);
-
-        $fileName = self::PROFILE_UPLOAD_PREFIX . $userId . '.' . $extension;
-        $targetPath = self::PROFILE_UPLOAD_DIRECTORY . '/' . $fileName;
-
-        return move_uploaded_file($tmpPath, $targetPath);
-    }
-
-    private function deleteExistingProfileImages(int $userId): void
-    {
-        $pattern = self::PROFILE_UPLOAD_DIRECTORY . '/' . self::PROFILE_UPLOAD_PREFIX . $userId . '.*';
-        $existingFiles = glob($pattern) ?: [];
-
-        foreach ($existingFiles as $existingFile) {
-            if (is_file($existingFile)) {
-                @unlink($existingFile);
-            }
-        }
-    }
-
-    private function resolveProfileImageUrl(User $user): string
-    {
-        $pattern = self::PROFILE_UPLOAD_DIRECTORY . '/' . self::PROFILE_UPLOAD_PREFIX . $user->getUserId() . '.*';
-        $matches = glob($pattern) ?: [];
-
-        if (!empty($matches)) {
-            return '/assets/images/' . basename($matches[0]);
-        }
-
-        return $user->getRole() === 'freelancer'
-            ? self::DEFAULT_FREELANCER_PROFILE_IMAGE
-            : self::DEFAULT_ADMIN_PROFILE_IMAGE;
-    }
-
-    private function updateUserRecord(User $currentUser, array $input): bool
-    {
-        $name = (string) ($input['contactName'] ?? $input['fullName'] ?? $currentUser->getName());
-
-        return $this->userRepository->update($currentUser->getUserId(), [
-            'username' => (string) ($input['username'] ?? $currentUser->getUsername()),
-            'name' => $name,
-            'email' => (string) ($input['email'] ?? $currentUser->getEmail()),
-            'password' => $currentUser->getPassword(),
-            'role' => $currentUser->getRole(),
-            'address' => (string) ($input['address'] ?? $currentUser->getAddress()),
-            'bio' => (string) ($input['bio'] ?? $currentUser->getBio()),
-            'kvkNr' => $currentUser->getKvkNr(),
-        ]);
-    }
-
-    private function upsertProductionHouseRecord(?ProductionHouse $productionHouse, int $userId, array $input): bool
-    {
-        $payload = [
-            'userId' => $userId,
-            'companyName' => (string) ($input['companyName'] ?? ''),
-            'website' => (string) ($input['website'] ?? ''),
-        ];
-
-        if ($productionHouse === null) {
-            return $this->productionHouseRepository->create($userId, $payload) > 0;
-        }
-
-        return $this->productionHouseRepository->update($productionHouse->getProductionHouseId(), $payload);
-    }
-
-    private function upsertFreelancerRecord(?Freelancer $freelancer, int $userId, string $dateOfBirth): bool
-    {
-        $payload = [
-            'userId' => $userId,
-            'dateOfBirth' => $dateOfBirth !== '' ? $dateOfBirth : null,
-        ];
-
-        if ($freelancer === null) {
-            return $this->freelancerRepository->create($userId, $payload) > 0;
-        }
-
-        return $this->freelancerRepository->update($freelancer->getFreelancerId(), $payload);
-    }
-
-    private function isValidEmail(string $email): bool
-    {
-        return $email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
-    }
-
-    private function isValidDate(string $value): bool
-    {
-        $date = DateTime::createFromFormat('Y-m-d', $value);
-
-        return $date !== false && $date->format('Y-m-d') === $value;
-    }
-
-    private function mimeTypeToExtension(string $mimeType): ?string
-    {
-        return match ($mimeType) {
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            'image/gif' => 'gif',
-            'image/webp' => 'webp',
-            default => null,
-        };
-    }
-
-    private function failure(string $message): array
-    {
-        return [
-            'success' => false,
-            'errors' => ['general' => $message],
-        ];
     }
 }

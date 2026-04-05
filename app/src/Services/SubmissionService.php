@@ -21,6 +21,9 @@ class SubmissionService extends Service implements ISubmissionService
     private UserRepository $userRepository;
     private SubmissionRepository $submissionRepository;
 
+    /**
+     * Build the submission service with repository dependencies.
+     */
     public function __construct(PDO $pdo)
     {
         parent::__construct($pdo);
@@ -30,6 +33,9 @@ class SubmissionService extends Service implements ISubmissionService
         $this->submissionRepository = new SubmissionRepository($pdo);
     }
 
+    /**
+     * Create a submission for one freelancer and gig.
+     */
     public function applyToGig(int $gigId, int $userId): array
     {
         if ($failure = $this->validateApplyRequest($gigId, $userId)) {
@@ -51,6 +57,9 @@ class SubmissionService extends Service implements ISubmissionService
         return $this->executeApply((int) $gigId, (int) $freelancer['freelancerId']);
     }
 
+    /**
+     * Return submissions for one freelancer user.
+     */
     public function getFreelancerSubmissions(int $userId): array
     {
         $freelancer = $this->findFreelancerForUser($userId);
@@ -64,6 +73,9 @@ class SubmissionService extends Service implements ISubmissionService
         return array_map(fn(Submission $submission): array => $this->mapSubmissionToViewData($submission), $submissions);
     }
 
+    /**
+     * Withdraw a pending submission for one freelancer user.
+     */
     public function withdrawSubmission(int $submissionId, int $userId): array
     {
         if ($failure = $this->validateWithdrawRequest($submissionId, $userId)) {
@@ -85,6 +97,9 @@ class SubmissionService extends Service implements ISubmissionService
         return $this->executeWithdraw($submissionId);
     }
 
+    /**
+     * Return submissions for gigs owned by one production house user.
+     */
     public function getProductionHouseSubmissions(int $ownerUserId): array
     {
         if ($ownerUserId <= 0) {
@@ -97,6 +112,9 @@ class SubmissionService extends Service implements ISubmissionService
         return $this->mapReviewSubmissionsToViewData($ownedSubmissions);
     }
 
+    /**
+     * Accept or reject a pending submission.
+     */
     public function reviewSubmission(int $submissionId, int $ownerUserId, string $decision): array
     {
         $decisionStatus = $this->parseDecisionStatus($decision);
@@ -120,20 +138,15 @@ class SubmissionService extends Service implements ISubmissionService
         return $this->executeReview($submission['submission'], $decisionStatus);
     }
 
+    /**
+     * Build a success payload for submission creation.
+     */
     private function buildSuccessResult(int $submissionId): array
     {
         return [
             'success' => true,
             'submissionId' => $submissionId,
             'message' => 'Your application has been submitted successfully.',
-        ];
-    }
-
-    private function buildFailureResult(array $errors): array
-    {
-        return [
-            'success' => false,
-            'errors' => $errors,
         ];
     }
 

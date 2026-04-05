@@ -18,7 +18,7 @@ $defaultValues = $viewModel->defaultValues;
                         <p class="mb-0"><?= htmlspecialchars($viewModel->heroDescription) ?></p>
                     </div>
 
-                    <a href="/dashboard/admin" class="btn btn-outline-light fw-semibold align-self-md-start">Back to Dashboard</a>
+                    <a href="/dashboard" class="btn btn-outline-light fw-semibold align-self-md-start">Back to Dashboard</a>
                 </div>
             </section>
 

@@ -1,4 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
+	initGigScroller();
+	initSignupRoleSwitching();
+});
+
+const initGigScroller = () => {
 	const scrollContainer = document.querySelector('[data-gigs-scroll-container]');
 	const scrollButtons = document.querySelectorAll('[data-gigs-action]');
 
@@ -25,14 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
 			behavior: 'smooth',
 		});
 	};
-
-	scrollButtons.forEach((button) => {
-		button.addEventListener('click', () => {
-			const direction = button.dataset.gigsAction === 'prev' ? -1 : 1;
-			scrollByAmount(direction);
-			restartAutoScroll();
-		});
-	});
 
 	let autoScrollTimer = null;
 
@@ -61,10 +58,47 @@ document.addEventListener('DOMContentLoaded', () => {
 		startAutoScroll();
 	};
 
+	scrollButtons.forEach((button) => {
+		button.addEventListener('click', () => {
+			const direction = button.dataset.gigsAction === 'prev' ? -1 : 1;
+			scrollByAmount(direction);
+			restartAutoScroll();
+		});
+	});
+
 	scrollContainer.addEventListener('mouseenter', stopAutoScroll);
 	scrollContainer.addEventListener('mouseleave', startAutoScroll);
 	scrollContainer.addEventListener('focusin', stopAutoScroll);
 	scrollContainer.addEventListener('focusout', startAutoScroll);
 
 	startAutoScroll();
-});
+};
+
+const initSignupRoleSwitching = () => {
+	const roleSelect = document.querySelector('[data-signup-role-select]');
+
+	if (!roleSelect) {
+		return;
+	}
+
+	const roleSections = document.querySelectorAll('[data-signup-role-section]');
+	if (roleSections.length === 0) {
+		return;
+	}
+
+	const syncRoleFields = () => {
+		const activeRole = roleSelect.value;
+
+		roleSections.forEach((section) => {
+			const isVisible = section.dataset.signupRoleSection === activeRole;
+			section.classList.toggle('d-none', !isVisible);
+
+			section.querySelectorAll('[data-signup-required]').forEach((field) => {
+				field.required = isVisible;
+			});
+		});
+	};
+
+	roleSelect.addEventListener('change', syncRoleFields);
+	syncRoleFields();
+};

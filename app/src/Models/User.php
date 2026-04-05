@@ -9,7 +9,7 @@ class User
     private string $name;        // VARCHAR(255)
     private string $email;       // VARCHAR(255)
     private string $password;    // VARCHAR(255)
-    private string $role;        // ENUM('admin', 'productionHouse', 'freelance')
+    private string $role;        // ENUM('admin', 'productionHouse', 'freelancer')
     private string $address;
     private string $bio;           // String
     private int $kvkNr;          // INT(8)

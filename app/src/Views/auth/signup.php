@@ -105,7 +105,7 @@
                                     </div>
                                 </div>
 
-                                <div class="mt-4 p-3 rounded-4 border bg-white d-none" data-signup-role-section="freelance">
+                                <div class="mt-4 p-3 rounded-4 border bg-white d-none" data-signup-role-section="freelancer">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <h2 class="h5 fw-bold mb-0" style="color: #172554;">Freelancer Details</h2>
                                         <span class="badge text-bg-info">Required for freelancers</span>

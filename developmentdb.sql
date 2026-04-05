@@ -18,7 +18,7 @@ CREATE TABLE `user` (
   `name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `role` enum('admin','productionHouse','freelance') NOT NULL,
+  `role` enum('admin','productionHouse','freelancer') NOT NULL,
   `address` varchar(255),
   `bio` text,
   `kvkNr` int(8) NOT NULL,
@@ -81,7 +81,7 @@ CREATE TABLE `submission` (
 
 INSERT INTO `user` (`userId`, `username`, `name`, `email`, `password`, `role`, `address`, `bio`, `kvkNr`, `createdAt`) VALUES
 (1, 'filmgig_admin', 'FilmGig Studios BV', 'admin@filmgig.nl', '$2y$12$wH0YxjQ9JpY5j6n9Q8m2C.3g6pV8gDg1nJx7b5Q3t5x5G4f6m2y4O', 'productionHouse', 'Rotterdam Media Park, NL', 'Niche film production marketplace.', 12345678, '2026-04-05 09:00:00'),
-(2, 'samira_pro', 'Samira Jansen', 'samira@filmgig.nl', '$2y$12$wH0YxjQ9JpY5j6n9Q8m2C.3g6pV8gDg1nJx7b5Q3t5x5G4f6m2y4O', 'freelance', 'Utrecht Creative District, NL', 'Freelance camera operator and editor.', 22345678, '2026-04-05 09:05:00'),
+(2, 'samira_pro', 'Samira Jansen', 'samira@filmgig.nl', '$2y$12$wH0YxjQ9JpY5j6n9Q8m2C.3g6pV8gDg1nJx7b5Q3t5x5G4f6m2y4O', 'freelancer', 'Utrecht Creative District, NL', 'Freelance camera operator and editor.', 22345678, '2026-04-05 09:05:00'),
 (3, 'james_admin', 'James Vermeer', 'james@filmgig.nl', '$2y$12$wH0YxjQ9JpY5j6n9Q8m2C.3g6pV8gDg1nJx7b5Q3t5x5G4f6m2y4O', 'admin', 'Amsterdam, NL', 'Platform administrator.', 32345678, '2026-04-05 09:10:00');
 
 INSERT INTO `productionHouse` (`productionHouseId`, `userId`, `companyName`, `website`, `createdAt`) VALUES

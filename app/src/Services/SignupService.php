@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\RoleType;
 use App\Repositories\FreelancerRepository;
 use App\Repositories\ProductionHouseRepository;
 use App\Repositories\UserRepository;
@@ -48,14 +49,14 @@ class SignupService
                 'kvkNr' => $normalizedInput['kvkNr'],
             ]);
 
-            if ($normalizedInput['role'] === 'productionHouse') {
+            if ($normalizedInput['role'] === RoleType::PRODUCTION_HOUSE->value) {
                 $this->productionHouseRepository->create($userId, [
                     'companyName' => $normalizedInput['companyName'],
                     'website' => $normalizedInput['website'],
                 ]);
             }
 
-            if ($normalizedInput['role'] === 'freelance') {
+            if ($normalizedInput['role'] === RoleType::FREELANCER->value) {
                 $this->freelancerRepository->create($userId, [
                     'dateOfBirth' => $normalizedInput['dateOfBirth'],
                 ]);
@@ -132,7 +133,7 @@ class SignupService
             $errors['password'] = 'Password must be at least 8 characters long.';
         }
 
-        if (!in_array($input['role'], ['productionHouse', 'freelance'], true)) {
+        if (!RoleType::isValid($input['role']) || $input['role'] === RoleType::ADMIN->value) {
             $errors['role'] = 'Please choose a valid account type.';
         }
 
@@ -144,7 +145,7 @@ class SignupService
             $errors['kvkNr'] = 'This Chamber of Commerce number is already registered.';
         }
 
-        if ($input['role'] === 'productionHouse') {
+        if ($input['role'] === RoleType::PRODUCTION_HOUSE->value) {
             if ($input['companyName'] === '') {
                 $errors['companyName'] = 'Company name is required for production companies.';
             }
@@ -154,7 +155,7 @@ class SignupService
             }
         }
 
-        if ($input['role'] === 'freelance') {
+        if ($input['role'] === RoleType::FREELANCER->value) {
             if ($input['dateOfBirth'] === '') {
                 $errors['dateOfBirth'] = 'Date of birth is required for freelancers.';
             } elseif (!$this->isValidDate($input['dateOfBirth'])) {

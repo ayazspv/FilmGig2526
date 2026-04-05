@@ -27,10 +27,24 @@
                                 </div>
                             <?php endif; ?>
 
+                            <?php if (!empty($viewModel->errors)) : ?>
+                                <div class="alert alert-danger border-0" role="alert">
+                                    <?php if (isset($viewModel->errors['general'])) : ?>
+                                        <p class="mb-0"><?= $escape((string) $viewModel->errors['general']) ?></p>
+                                    <?php else : ?>
+                                        <ul class="mb-0 ps-3">
+                                            <?php foreach ($viewModel->errors as $error) : ?>
+                                                <li><?= $escape((string) $error) ?></li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+
                             <form action="/signin" method="POST">
                                 <div class="mb-3">
                                     <label for="email" class="form-label fw-semibold">Email address</label>
-                                    <input type="email" class="form-control form-control-lg" id="email" name="email" required>
+                                    <input type="email" class="form-control form-control-lg" id="email" name="email" value="<?= $escape((string) ($viewModel->oldInput['email'] ?? '')) ?>" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="password" class="form-label fw-semibold">Password</label>

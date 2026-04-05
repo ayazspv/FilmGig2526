@@ -24,13 +24,13 @@
                 <a href="#" class="btn btn-outline-light dropdown-toggle d-flex align-items-center gap-2"
                     id="profileDropdownAdmin" data-bs-toggle="dropdown" aria-expanded="false">
                     <img src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=100&q=80" alt="Profile Picture" class="rounded-circle" width="28" height="28">
-                    <span><?php echo isset($_SESSION['name']) ? htmlspecialchars($_SESSION['name']) : 'User'; ?></span>
+                    <span><?php echo isset($_SESSION['auth_user_name']) ? htmlspecialchars($_SESSION['auth_user_name']) : 'User'; ?></span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdownAdmin">
                     <li><a class="dropdown-item" href="/profile">My Profile</a></li>
                     <li><a class="dropdown-item" href="/settings">Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" href="/SignoutAction">Log Out</a></li>
+                    <li><a class="dropdown-item text-danger" href="/signout">Log Out</a></li>
                 </ul>
             </div>
         </div>

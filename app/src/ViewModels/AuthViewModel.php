@@ -2,6 +2,8 @@
 
 namespace App\ViewModels;
 
+use App\Enums\RoleType;
+
 class AuthViewModel
 {
     public function __construct(
@@ -13,11 +15,13 @@ class AuthViewModel
     ) {
     }
 
-    public static function createForSignin(?string $successMessage = null): self
+    public static function createForSignin(?string $successMessage = null, array $errors = [], array $oldInput = []): self
     {
         return new self(
             pageTitle: 'Sign In - FilmGig',
             successMessage: $successMessage,
+            errors: $errors,
+            oldInput: $oldInput,
         );
     }
 
@@ -36,8 +40,8 @@ class AuthViewModel
             errors: $errors,
             successMessage: $successMessage,
             roleOptions: [
-                ['value' => 'productionHouse', 'label' => 'Production Company'],
-                ['value' => 'freelance', 'label' => 'Freelancer'],
+                ['value' => RoleType::PRODUCTION_HOUSE->value, 'label' => RoleType::PRODUCTION_HOUSE->label()],
+                ['value' => RoleType::FREELANCER->value, 'label' => RoleType::FREELANCER->label()],
             ],
         );
     }

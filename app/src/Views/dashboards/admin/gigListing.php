@@ -9,7 +9,7 @@ $primaryTable = $viewModel->primaryTable;
     <main class="flex-grow-1 py-5">
         <div class="container">
             <div class="d-flex justify-content-end mb-3">
-                <a href="/dashboard/admin" class="btn btn-outline-secondary fw-semibold">Back to Dashboard</a>
+                <a href="/dashboard" class="btn btn-outline-secondary fw-semibold">Back to Dashboard</a>
             </div>
 
             <section>

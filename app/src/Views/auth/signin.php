@@ -1,4 +1,7 @@
+<?php $escape = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); ?>
+<?php /** @var \App\ViewModels\AuthViewModel $viewModel */ ?>
 <div class="d-flex flex-column min-vh-100">
+    <?php $pageTitle = $viewModel->pageTitle; ?>
     <?php include __DIR__ . '/../partials/header.php'; ?>
     <section class="py-5 flex-grow-1 d-flex align-items-center" style="background-color: #E5E7EB;">
         <div class="container">
@@ -18,10 +21,30 @@
                             <h1 class="h3 fw-bold mb-2" style="color: #172554;">Sign In</h1>
                             <p class="mb-4" style="color: #1F2937;">Access your profile and apply to new gigs.</p>
 
-                            <form action="/SigninAction" method="POST">
+                            <?php if (!empty($viewModel->successMessage)) : ?>
+                                <div class="alert alert-success border-0" role="alert">
+                                    <?= $escape((string) $viewModel->successMessage) ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($viewModel->errors)) : ?>
+                                <div class="alert alert-danger border-0" role="alert">
+                                    <?php if (isset($viewModel->errors['general'])) : ?>
+                                        <p class="mb-0"><?= $escape((string) $viewModel->errors['general']) ?></p>
+                                    <?php else : ?>
+                                        <ul class="mb-0 ps-3">
+                                            <?php foreach ($viewModel->errors as $error) : ?>
+                                                <li><?= $escape((string) $error) ?></li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <form action="/signin" method="POST">
                                 <div class="mb-3">
-                                    <label for="email" class="form-label fw-semibold">Email address</label>
-                                    <input type="email" class="form-control form-control-lg" id="email" name="email" required>
+                                    <label for="username" class="form-label fw-semibold">Username</label>
+                                    <input type="text" class="form-control form-control-lg" id="username" name="username" value="<?= $escape((string) ($viewModel->oldInput['username'] ?? '')) ?>" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="password" class="form-label fw-semibold">Password</label>

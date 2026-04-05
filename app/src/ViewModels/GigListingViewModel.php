@@ -2,6 +2,10 @@
 
 namespace App\ViewModels;
 
+use App\Enums\GigCategory;
+use App\Enums\GigRateType;
+use App\Models\Gig;
+
 class GigListingViewModel
 {
     public function __construct(
@@ -24,19 +28,12 @@ class GigListingViewModel
             heroTitle: 'Discover Film Industry Gigs',
             heroDescription: 'Browse the latest gigs and use filters to find opportunities that match your skill set.',
             filters: [
-                'date' => '2026-04-12',
-                'startTime' => '09:00',
-                'location' => 'Randstad, Netherlands',
-                'minimumRate' => 45,
+                'date' => '',
+                'location' => '',
+                'minimumRate' => 20,
             ],
-            categoryOptions: [
-                'camera' => 'Camera',
-                'editing' => 'Editing',
-                'sound' => 'Sound',
-                'production' => 'Production',
-                'animation' => 'Animation',
-            ],
-            selectedCategories: ['camera', 'production'],
+            categoryOptions: GigCategory::filterOptions(),
+            selectedCategories: [],
             gigs: [
                 [
                     'title' => 'Documentary Camera Operator',
@@ -79,6 +76,42 @@ class GigListingViewModel
                     'detailUrl' => 'gig-detail',
                 ],
             ],
+        );
+    }
+
+    public static function createFromGigs(array $gigs): self
+    {
+        $default = self::createDefault();
+
+        $normalizedGigs = array_map(
+            static fn(Gig $gig): array => [
+                'title' => $gig->getTitle(),
+                'description' => $gig->getDescription(),
+                'rate' => sprintf(
+                    'EUR %.2f/%s',
+                    $gig->getPayRate(),
+                    GigRateType::tryFrom($gig->getRateType())?->suffix() ?? 'hr'
+                ),
+                'location' => $gig->getLocation(),
+                'startDate' => $gig->getStartDate(),
+                'category' => GigCategory::tryFrom($gig->getCategory())?->label() ?? $gig->getCategory(),
+                'imageUrl' => $gig->getImageUrl(),
+                'detailUrl' => '/gigs/' . $gig->getGigId(),
+            ],
+            $gigs
+        );
+
+        $selectedCategories = [];
+
+        return new self(
+            pageTitle: $default->pageTitle,
+            badgeLabel: $default->badgeLabel,
+            heroTitle: $default->heroTitle,
+            heroDescription: $default->heroDescription,
+            filters: $default->filters,
+            categoryOptions: $default->categoryOptions,
+            selectedCategories: $selectedCategories,
+            gigs: $normalizedGigs,
         );
     }
 }

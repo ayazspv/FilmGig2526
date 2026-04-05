@@ -47,4 +47,28 @@ class AdminDashboardViewModel
             ],
         );
     }
+
+    public static function createFromData(string $pageTitle, string $badgeLabel, string $heroDescription, array $stats, array $primaryTable, array $secondaryList): self
+    {
+        return new self(
+            pageTitle: $pageTitle,
+            badgeLabel: $badgeLabel,
+            heroDescription: $heroDescription,
+            stats: $stats,
+            primaryTable: $primaryTable,
+            secondaryList: $secondaryList,
+        );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'pageTitle' => $this->pageTitle,
+            'badgeLabel' => $this->badgeLabel,
+            'heroDescription' => $this->heroDescription,
+            'stats' => $this->stats,
+            'primaryTable' => $this->primaryTable,
+            'secondaryList' => $this->secondaryList,
+        ];
+    }
 }

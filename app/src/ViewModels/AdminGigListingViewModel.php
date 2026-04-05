@@ -2,6 +2,8 @@
 
 namespace App\ViewModels;
 
+use App\Models\Gig;
+
 class AdminGigListingViewModel 
 {
     public function __construct(
@@ -15,36 +17,47 @@ class AdminGigListingViewModel
     ) {
     }
 
-    public static function createDefault(): self
+    public static function createForGigs(array $gigs, string $ownerName): self
     {
+        $totalGigs = count($gigs);
+        $activeGigs = count(array_filter($gigs, static fn(Gig $gig): bool => $gig->getStatus() === 'active'));
+        $closedGigs = count(array_filter($gigs, static fn(Gig $gig): bool => $gig->getStatus() === 'closed'));
+        $averageRate = $totalGigs > 0
+            ? array_sum(array_map(static fn(Gig $gig): float => $gig->getPayRate(), $gigs)) / $totalGigs
+            : 0.0;
+
         return new self(
-            pageTitle: 'Admin Gig Listing - FilmGig',
-            badgeLabel: 'Admin Gigs',
-            heroTitle: 'Manage Published Gigs',
-            heroDescription: 'Track performance and manage status for all currently published gigs.',
+            pageTitle: 'Production House Gigs - FilmGig',
+            badgeLabel: 'Production House Gigs',
+            heroTitle: sprintf('%s, manage your gigs', $ownerName),
+            heroDescription: 'Review every gig attached to your production house account, then edit or inspect each posting from one place.',
             stats: [
-                ['label' => 'Active Gigs', 'value' => '14', 'note' => '+2 this week'],
-                ['label' => 'Drafts', 'value' => '4', 'note' => 'Needs review'],
-                ['label' => 'Applications', 'value' => '97', 'note' => '+11 today'],
-                ['label' => 'Avg. Rate', 'value' => 'EUR 52/hr', 'note' => 'Across active gigs'],
+                ['label' => 'Total Gigs', 'value' => (string) $totalGigs, 'note' => 'All gigs in your account'],
+                ['label' => 'Active', 'value' => (string) $activeGigs, 'note' => 'Currently open'],
+                ['label' => 'Closed', 'value' => (string) $closedGigs, 'note' => 'Already finished'],
+                ['label' => 'Avg. Rate', 'value' => $totalGigs > 0 ? sprintf('EUR %.2f/hr', $averageRate) : 'EUR 0.00/hr', 'note' => 'Across your gigs'],
             ],
             primaryTable: [
-                'title' => 'Current Gig Openings',
-                'columns' => ['Role', 'Status', 'Applications', 'Actions'],
-                'rows' => [
-                    ['title' => 'Documentary Camera Operator', 'status' => 'Active', 'value' => 22],
-                    ['title' => 'Commercial Video Editor', 'status' => 'Active', 'value' => 31],
-                    ['title' => 'Lighting Technician', 'status' => 'Paused', 'value' => 9],
-                    ['title' => 'Assistant Producer', 'status' => 'Draft', 'value' => 0],
-                ],
+                'title' => 'Your Posted Gigs',
+                'columns' => ['Gig', 'Category', 'Status', 'Rate', 'Actions'],
+                'rows' => array_map(
+                    static fn(Gig $gig): array => [
+                        'title' => $gig->getTitle(),
+                        'category' => $gig->getCategory(),
+                        'status' => ucfirst($gig->getStatus()),
+                        'value' => sprintf('EUR %.2f', $gig->getPayRate()),
+                        'viewUrl' => '/gigs/' . $gig->getGigId(),
+                        'editUrl' => '/dashboard/gigs/' . $gig->getGigId(),
+                    ],
+                    $gigs
+                ),
             ],
             secondaryList: [
-                'title' => 'Recent Activity',
+                'title' => 'Gig Summary',
                 'items' => [
-                    ['title' => 'New applicant: Samira Jansen', 'subtitle' => 'Documentary Camera Operator', 'meta' => '10m ago'],
-                    ['title' => 'Gig status updated', 'subtitle' => 'Lighting Technician set to Paused', 'meta' => '45m ago'],
-                    ['title' => 'Draft saved', 'subtitle' => 'Assistant Producer', 'meta' => '2h ago'],
-                    ['title' => 'Gig published', 'subtitle' => 'Commercial Video Editor', 'meta' => 'Yesterday'],
+                    ['title' => 'Gig ownership', 'subtitle' => sprintf('%d gig(s) linked to %s', $totalGigs, $ownerName), 'meta' => 'Current account'],
+                    ['title' => 'Active listings', 'subtitle' => sprintf('%d open gig(s) waiting for freelancers', $activeGigs), 'meta' => 'Live now'],
+                    ['title' => 'Closed listings', 'subtitle' => sprintf('%d gig(s) already closed', $closedGigs), 'meta' => 'Archive'],
                 ],
             ],
         );

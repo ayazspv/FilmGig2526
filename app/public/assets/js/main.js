@@ -1,70 +1,45 @@
-document.addEventListener('DOMContentLoaded', () => {
-	const scrollContainer = document.querySelector('[data-gigs-scroll-container]');
-	const scrollButtons = document.querySelectorAll('[data-gigs-action]');
+/** Bootstraps the shared UI behaviors once the DOM is ready. */
+document.addEventListener('DOMContentLoaded', onMainReady);
 
-	if (!scrollContainer || scrollButtons.length === 0) {
+/** Starts the main page helpers. */
+function onMainReady() {
+	initSignupRoleSwitching();
+}
+
+/** Initializes role-based signup sections and required fields. */
+const initSignupRoleSwitching = () => {
+	const roleSelect = document.querySelector('[data-signup-role-select]');
+
+	if (!roleSelect) {
 		return;
 	}
 
-	const getScrollAmount = () => {
-		const firstCard = scrollContainer.querySelector('.gig-scroll-card');
+	const roleSections = document.querySelectorAll('[data-signup-role-section]');
+	if (roleSections.length === 0) {
+		return;
+	}
 
-		if (!firstCard) {
-			return 320;
-		}
-
-		const computedStyle = window.getComputedStyle(scrollContainer.querySelector('.d-flex') ?? firstCard);
-		const gapValue = parseFloat(computedStyle.columnGap || computedStyle.gap || '0') || 0;
-
-		return firstCard.getBoundingClientRect().width + gapValue;
+	const syncRoleFields = () => {
+		const activeRole = roleSelect.value;
+		updateRoleSectionVisibility(roleSections, activeRole);
 	};
 
-	const scrollByAmount = (direction) => {
-		scrollContainer.scrollBy({
-			left: direction * getScrollAmount(),
-			behavior: 'smooth',
-		});
-	};
+	roleSelect.addEventListener('change', syncRoleFields);
+	syncRoleFields();
+};
 
-	scrollButtons.forEach((button) => {
-		button.addEventListener('click', () => {
-			const direction = button.dataset.gigsAction === 'prev' ? -1 : 1;
-			scrollByAmount(direction);
-			restartAutoScroll();
-		});
+/** Shows the active signup section and disables required fields on hidden sections. */
+const updateRoleSectionVisibility = (roleSections, activeRole) => {
+	roleSections.forEach((section) => {
+		const isVisible = section.dataset.signupRoleSection === activeRole;
+		section.classList.toggle('d-none', !isVisible);
+		setSectionRequiredState(section, isVisible);
 	});
+};
 
-	let autoScrollTimer = null;
-
-	const startAutoScroll = () => {
-		stopAutoScroll();
-		autoScrollTimer = window.setInterval(() => {
-			const maxScrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth;
-
-			if (scrollContainer.scrollLeft >= maxScrollLeft - 8) {
-				scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
-				return;
-			}
-
-			scrollByAmount(1);
-		}, 3500);
-	};
-
-	const stopAutoScroll = () => {
-		if (autoScrollTimer !== null) {
-			window.clearInterval(autoScrollTimer);
-			autoScrollTimer = null;
-		}
-	};
-
-	const restartAutoScroll = () => {
-		startAutoScroll();
-	};
-
-	scrollContainer.addEventListener('mouseenter', stopAutoScroll);
-	scrollContainer.addEventListener('mouseleave', startAutoScroll);
-	scrollContainer.addEventListener('focusin', stopAutoScroll);
-	scrollContainer.addEventListener('focusout', startAutoScroll);
-
-	startAutoScroll();
-});
+/** Updates the required state of inputs inside one signup section. */
+const setSectionRequiredState = (section, isVisible) => {
+	section.querySelectorAll('[data-signup-required]').forEach((field) => {
+		field.required = isVisible;
+	});
+};

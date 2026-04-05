@@ -1,6 +1,27 @@
 <?php
+$currentRole = (string) ($_SESSION['auth_user_role'] ?? '');
 $pageTitle = $pageTitle ?? 'FilmGig';
 $escape = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+$navbarProfileImage = '';
+
+if ($currentRole !== '') {
+    $authUserId = (int) ($_SESSION['auth_user_id'] ?? 0);
+
+    if ($authUserId > 0) {
+        $pattern = __DIR__ . '/../../../public/assets/images/profile-user-' . $authUserId . '.*';
+        $matches = glob($pattern) ?: [];
+
+        if (!empty($matches)) {
+            $navbarProfileImage = '/assets/images/' . basename($matches[0]);
+        }
+    }
+
+    if ($navbarProfileImage === '') {
+        $navbarProfileImage = $currentRole === 'freelancer'
+            ? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'
+            : 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=100&q=80';
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -19,9 +40,13 @@ $escape = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTE
     <header class="sticky-top shadow-sm" style="background-color: #172554;">
 
         <?php
-            // include __DIR__ . '/navbars/freelanceNavbar.php';
-            // include __DIR__ . '/navbars/adminNavbar.php';
-            include __DIR__ . '/navbars/normalNavbar.php';
+            if ($currentRole === 'admin' || $currentRole === 'productionHouse') {
+                include __DIR__ . '/navbars/adminNavbar.php';
+            } elseif ($currentRole === 'freelancer') {
+                include __DIR__ . '/navbars/freelanceNavbar.php';
+            } else {
+                include __DIR__ . '/navbars/normalNavbar.php';
+            }
         ?>
 
     </header>

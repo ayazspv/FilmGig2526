@@ -12,6 +12,7 @@ $router = new Router();
 
 // Non-auth routes
 $router->addRoute('GET', '/', ['App\Controllers\HomeController', 'index']);
+$router->addRoute('GET', '/api/home', ['App\Controllers\HomeController', 'apiIndex']);
 
 // Auth routes
 $router->addRoute('GET', '/signup', ['App\Controllers\AuthController', 'showSignupForm']);

@@ -53,6 +53,54 @@ PHPMyAdmin provides basic database administration. It is accessible at [localhos
 
 Credentials are defined in `docker-compose.yml`. They are: developer/secret123
 
+## Compliance Notes (WCAG & GDPR)
+
+This project includes implementation choices intended to support WCAG accessibility and GDPR privacy/security obligations.
+
+Note: this section documents technical controls present in the codebase and is not legal advice.
+
+### WCAG-related implementation references
+
+- Semantic structure and page regions (header/main/section) used consistently in views:
+	- `app/src/Views/gigs/gigDetail.php`
+	- `app/src/Views/dashboards/admin/submissions.php`
+	- `app/src/Views/profiles/freelancerPublicProfile.php`
+- Accessible labels and form structure (`label for=...` + input ids):
+	- `app/src/Views/auth/signup.php`
+	- `app/src/Views/auth/signin.php`
+	- `app/src/Views/dashboards/admin/gigPosting.php`
+- Alternative text for images and descriptive avatar/hero alt attributes:
+	- `app/src/Views/partials/navbars/adminNavbar.php`
+	- `app/src/Views/partials/navbars/freelanceNavbar.php`
+	- `app/src/Views/gigs/gigDetail.php`
+- ARIA usage for navigation controls and dropdown relationships:
+	- `app/src/Views/partials/navbars/adminNavbar.php`
+	- `app/src/Views/partials/navbars/freelanceNavbar.php`
+- Keyboard interaction support (e.g., Enter-to-search and focus-aware behavior):
+	- `app/public/assets/js/home.js`
+	- `app/public/assets/js/main.js`
+
+### GDPR-related implementation references
+
+- Passwords are stored as one-way hashes (never plaintext):
+	- `app/src/Services/SignupService.php`
+	- `app/src/Services/PasswordResetService.php`
+- Sign-in verifies hashed passwords using secure password APIs:
+	- `app/src/Services/SigninService.php`
+- Session cleanup on sign-out includes session data wipe + cookie invalidation:
+	- `app/src/Framework/Controller.php`
+	- `app/src/Controllers/AuthController.php`
+- Input validation and output encoding to reduce injection/XSS risk:
+	- `app/src/Services/SignupService.php`
+	- `app/src/Services/ProfileService.php`
+	- `app/src/Views/partials/header.php`
+	- `app/src/Views/gigs/gigDetail.php`
+- User profile update and password reset flows (data rectification/account security support):
+	- `app/src/Controllers/ProfileController.php`
+	- `app/src/Controllers/AuthController.php`
+	- `documentation/Profile/ProfileEditing.md`
+	- `documentation/Auth/ResetPassword.md`
+
 
 ### Stopping the docker container
 

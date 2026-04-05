@@ -3,18 +3,18 @@
 namespace App\Controllers;
 
 use App\Config;
-use App\Repositories\GigRepository;
-use App\Repositories\FreelancerRepository;
-use App\Repositories\ProductionHouseRepository;
-use App\Repositories\UserRepository;
 use App\ViewModels\GigListingViewModel;
-use App\ViewModels\GigDetailViewModel;
 use App\Framework\Controller;
+use App\Services\GigReadService;
 use App\Services\SubmissionService;
 use App\Enums\RoleType;
+use App\Repositories\GigRepository;
 
 class GigController extends Controller
 {
+    /**
+     * Render the public gig listing page.
+     */
     public function showGigListing(array $params = []): void
     {
         $gigRepository = new GigRepository(Config::pdo());
@@ -23,52 +23,38 @@ class GigController extends Controller
         include __DIR__ . '/../Views/gigs/gigListing.php';
     }
 
+    /**
+     * Render the public detail page for a specific gig.
+     */
     public function showGigDetail(array $params = []): void
     {
         $gigId = (int) ($params['id'] ?? 0);
 
         if ($gigId <= 0) {
-            header('Location: /gigs');
-            exit;
+            $this->redirect('/gigs');
         }
 
-        $gigRepository = new GigRepository(Config::pdo());
-        $userRepository = new UserRepository(Config::pdo());
-        $productionHouseRepository = new ProductionHouseRepository(Config::pdo());
+        $detailData = $this->getGigReadService()->buildGigDetailData(
+            $gigId,
+            $this->authUserRole(),
+            (int) ($_SESSION['auth_user_id'] ?? 0)
+        );
 
-        $gig = $gigRepository->findById($gigId);
-
-        if ($gig === null) {
-            header('Location: /gigs');
-            exit;
+        if ($detailData === null) {
+            $this->redirect('/gigs');
         }
 
-        $owner = $userRepository->findById($gig->getOwnerId());
-        $productionHouse = $productionHouseRepository->findByUserId($gig->getOwnerId());
-
-        $viewModel = GigDetailViewModel::createFromGig($gig, $owner, $productionHouse);
-        $hasAlreadyApplied = false;
-
-        if (($this->authUserRole() ?? '') === RoleType::FREELANCER->value && (int) ($_SESSION['auth_user_id'] ?? 0) > 0) {
-            $submissionService = new SubmissionService(Config::pdo());
-            $freelancerSubmissions = $submissionService->getFreelancerSubmissions((int) $_SESSION['auth_user_id']);
-
-            foreach ($freelancerSubmissions as $submission) {
-                if ((int) ($submission['gigId'] ?? 0) === $gigId) {
-                    $hasAlreadyApplied = true;
-                    break;
-                }
-            }
-        }
-
-        $submissionSuccessMessage = $_SESSION['submission_success_message'] ?? null;
-        $submissionErrorMessage = $_SESSION['submission_error_message'] ?? null;
-
-        unset($_SESSION['submission_success_message'], $_SESSION['submission_error_message']);
+        $viewModel = $detailData['viewModel'];
+        $hasAlreadyApplied = (bool) ($detailData['hasAlreadyApplied'] ?? false);
+        $submissionSuccessMessage = $this->consumeFlashMessage('submission_success_message');
+        $submissionErrorMessage = $this->consumeFlashMessage('submission_error_message');
 
         include __DIR__ . '/../Views/gigs/gigDetail.php';
     }
 
+    /**
+     * Handle a freelancer application for a gig.
+     */
     public function handleGigApplication(array $params = []): void
     {
         $this->requireRole([RoleType::FREELANCER->value]);
@@ -98,70 +84,26 @@ class GigController extends Controller
     {
         header('Content-Type: application/json; charset=utf-8');
 
-        $gigRepository = new GigRepository(Config::pdo());
-        $allGigs = $gigRepository->findAll();
+        $gigs = $this->getGigReadService()->getFilteredActiveGigs($_GET);
+        echo json_encode(['gigs' => $gigs], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
 
-        // Apply filters from query parameters
-        $location = $_GET['location'] ?? '';
-        $date = $_GET['date'] ?? '';
-        $minimumRate = (float) ($_GET['minimumRate'] ?? 0);
-        $normalizeCategory = static fn(string $category): string => match (strtolower(trim($category))) {
-            'audio' => 'sound',
-            default => strtolower(trim($category)),
-        };
+    /**
+     * Build a one-time flash message and remove it from session.
+     */
+    private function consumeFlashMessage(string $key): ?string
+    {
+        $message = $_SESSION[$key] ?? null;
+        unset($_SESSION[$key]);
 
-        $categories = isset($_GET['categories'])
-            ? array_values(array_filter(array_map(static fn(string $category): string => match (strtolower(trim($category))) {
-                'audio' => 'sound',
-                default => strtolower(trim($category)),
-            }, explode(',', (string) $_GET['categories']))))
-            : [];
+        return $message !== null ? (string) $message : null;
+    }
 
-        $filteredGigs = array_values(array_filter($allGigs, static function ($gig) use ($location, $date, $minimumRate, $categories, $normalizeCategory) {
-            // Only expose active gigs in listing API.
-            if (strtolower((string) $gig->getStatus()) !== 'active') {
-                return false;
-            }
-
-            // Filter by location
-            if ($location && stripos($gig->getLocation(), $location) === false) {
-                return false;
-            }
-
-            // Filter by date
-            if ($date && $gig->getStartDate() < $date) {
-                return false;
-            }
-
-            // Filter by minimum rate
-            if ($minimumRate > 0 && $gig->getPayRate() < $minimumRate) {
-                return false;
-            }
-
-            // Filter by categories
-            if (!empty($categories) && !in_array($normalizeCategory($gig->getCategory()), $categories, true)) {
-                return false;
-            }
-
-            return true;
-        }));
-
-        $gigsData = array_map(static function ($gig) {
-            return [
-                'gigId' => $gig->getGigId(),
-                'title' => $gig->getTitle(),
-                'description' => $gig->getDescription(),
-                'category' => $gig->getCategory(),
-                'location' => $gig->getLocation(),
-                'startDate' => $gig->getStartDate(),
-                'payRate' => $gig->getPayRate(),
-                'rateType' => $gig->getRateType(),
-                'imageUrl' => $gig->getImageUrl(),
-                'status' => $gig->getStatus(),
-                'detailUrl' => '/gigs/' . $gig->getGigId(),
-            ];
-        }, $filteredGigs);
-
-        echo json_encode(['gigs' => $gigsData], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    /**
+     * Build the gig read service for listing and detail payloads.
+     */
+    private function getGigReadService(): GigReadService
+    {
+        return new GigReadService(Config::pdo());
     }
 }

@@ -2,13 +2,10 @@
 
 namespace App\Controllers;
 
-use App\Config;
 use App\Enums\RoleType;
 use App\Framework\Controller;
-use App\Repositories\FreelancerRepository;
-use App\Repositories\ProductionHouseRepository;
-use App\Repositories\UserRepository;
 use App\Services\Interfaces\IProfileService;
+use App\Config;
 use App\Services\ProfileService;
 use App\ViewModels\AdminProfileViewModel;
 use App\ViewModels\FreelancerProfileViewModel;
@@ -84,33 +81,12 @@ class ProfileController extends Controller
      */
     public function showProductionHousePublicProfile(array $params = []): void
     {
-        $userId = (int) ($params['id'] ?? 0);
+        $userId = $this->extractPublicProfileUserId($params);
+        $viewData = $this->getProfileService()->getProductionHousePublicProfileData($userId);
 
-        if ($userId <= 0) {
+        if ($viewData === null) {
             $this->redirect('/gigs');
         }
-
-        $userRepository = new UserRepository(Config::pdo());
-        $productionHouseRepository = new ProductionHouseRepository(Config::pdo());
-
-        $user = $userRepository->findById($userId);
-
-        if ($user === null || !in_array((string) $user->getRole(), [RoleType::ADMIN->value, RoleType::PRODUCTION_HOUSE->value], true)) {
-            $this->redirect('/gigs');
-        }
-
-        $productionHouse = $productionHouseRepository->findByUserId($userId);
-
-        $viewData = [
-            'pageTitle' => trim(($productionHouse?->getCompanyName() ?: $user->getName()) . ' - Production Profile - FilmGig'),
-            'profileImage' => $this->resolvePublicProfileImageUrl($userId),
-            'contactName' => $user->getName(),
-            'companyName' => $productionHouse?->getCompanyName() ?: $user->getName(),
-            'email' => $user->getEmail(),
-            'address' => $user->getAddress(),
-            'website' => $productionHouse?->getWebsite() ?? '',
-            'bio' => $user->getBio(),
-        ];
 
         include __DIR__ . '/../Views/profiles/productionHousePublicProfile.php';
     }
@@ -120,32 +96,12 @@ class ProfileController extends Controller
      */
     public function showFreelancerPublicProfile(array $params = []): void
     {
-        $userId = (int) ($params['id'] ?? 0);
+        $userId = $this->extractPublicProfileUserId($params);
+        $viewData = $this->getProfileService()->getFreelancerPublicProfileData($userId);
 
-        if ($userId <= 0) {
+        if ($viewData === null) {
             $this->redirect('/gigs');
         }
-
-        $userRepository = new UserRepository(Config::pdo());
-        $freelancerRepository = new FreelancerRepository(Config::pdo());
-
-        $user = $userRepository->findById($userId);
-
-        if ($user === null || (string) $user->getRole() !== RoleType::FREELANCER->value) {
-            $this->redirect('/gigs');
-        }
-
-        $freelancer = $freelancerRepository->findByUserId($userId);
-
-        $viewData = [
-            'pageTitle' => trim($user->getName() . ' - Freelancer Profile - FilmGig'),
-            'profileImage' => $this->resolvePublicProfileImageUrl($userId, RoleType::FREELANCER->value),
-            'fullName' => $user->getName(),
-            'email' => $user->getEmail(),
-            'address' => $user->getAddress(),
-            'dateOfBirth' => $freelancer?->getDateOfBirth() ?? '',
-            'bio' => $user->getBio(),
-        ];
 
         include __DIR__ . '/../Views/profiles/freelancerPublicProfile.php';
     }
@@ -235,11 +191,25 @@ class ProfileController extends Controller
     }
 
     /**
-     * Build profile service.
+     * Build the profile service instance.
      */
     private function getProfileService(): IProfileService
     {
         return new ProfileService(Config::pdo());
+    }
+
+    /**
+     * Extract and validate a public profile user id from route params.
+     */
+    private function extractPublicProfileUserId(array $params): int
+    {
+        $userId = (int) ($params['id'] ?? 0);
+
+        if ($userId <= 0) {
+            $this->redirect('/gigs');
+        }
+
+        return $userId;
     }
 
     /**
@@ -262,25 +232,6 @@ class ProfileController extends Controller
         unset($_SESSION[$key]);
 
         return is_array($value) ? $value : [];
-    }
-
-    /**
-     * Resolve a profile image URL for public profile pages.
-     */
-    private function resolvePublicProfileImageUrl(int $userId, string $role = RoleType::PRODUCTION_HOUSE->value): string
-    {
-        $pattern = __DIR__ . '/../../public/assets/images/profile-user-' . $userId . '.*';
-        $matches = glob($pattern) ?: [];
-
-        if (!empty($matches)) {
-            return '/assets/images/' . basename($matches[0]);
-        }
-
-        if ($role === RoleType::FREELANCER->value) {
-            return 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=220&q=80';
-        }
-
-        return 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=220&q=80';
     }
 
 }

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\RoleType;
 use App\Framework\Service;
 use App\Models\Freelancer;
 use App\Models\ProductionHouse;
@@ -79,6 +80,57 @@ class ProfileService extends Service implements IProfileService
                 'dateOfBirth' => $freelancer?->getDateOfBirth() ?? '',
                 'bio' => $user->getBio(),
             ],
+        ];
+    }
+
+    public function getProductionHousePublicProfileData(int $userId): ?array
+    {
+        if ($userId <= 0) {
+            return null;
+        }
+
+        $user = $this->userRepository->findById($userId);
+
+        if ($user === null || !in_array((string) $user->getRole(), [RoleType::ADMIN->value, RoleType::PRODUCTION_HOUSE->value], true)) {
+            return null;
+        }
+
+        $productionHouse = $this->productionHouseRepository->findByUserId($userId);
+
+        return [
+            'pageTitle' => trim(($productionHouse?->getCompanyName() ?: $user->getName()) . ' - Production Profile - FilmGig'),
+            'profileImage' => $this->resolvePublicProfileImageUrlByUserId($userId),
+            'contactName' => $user->getName(),
+            'companyName' => $productionHouse?->getCompanyName() ?: $user->getName(),
+            'email' => $user->getEmail(),
+            'address' => $user->getAddress(),
+            'website' => $productionHouse?->getWebsite() ?? '',
+            'bio' => $user->getBio(),
+        ];
+    }
+
+    public function getFreelancerPublicProfileData(int $userId): ?array
+    {
+        if ($userId <= 0) {
+            return null;
+        }
+
+        $user = $this->userRepository->findById($userId);
+
+        if ($user === null || (string) $user->getRole() !== RoleType::FREELANCER->value) {
+            return null;
+        }
+
+        $freelancer = $this->freelancerRepository->findByUserId($userId);
+
+        return [
+            'pageTitle' => trim($user->getName() . ' - Freelancer Profile - FilmGig'),
+            'profileImage' => $this->resolvePublicProfileImageUrlByUserId($userId, RoleType::FREELANCER->value),
+            'fullName' => $user->getName(),
+            'email' => $user->getEmail(),
+            'address' => $user->getAddress(),
+            'dateOfBirth' => $freelancer?->getDateOfBirth() ?? '',
+            'bio' => $user->getBio(),
         ];
     }
 
@@ -282,6 +334,25 @@ class ProfileService extends Service implements IProfileService
                 'bio' => '',
             ],
         ];
+    }
+
+    /**
+     * Resolve public profile image URL by user id and role.
+     */
+    private function resolvePublicProfileImageUrlByUserId(int $userId, string $role = RoleType::PRODUCTION_HOUSE->value): string
+    {
+        $pattern = __DIR__ . '/../../public/assets/images/profile-user-' . $userId . '.*';
+        $matches = glob($pattern) ?: [];
+
+        if (!empty($matches)) {
+            return '/assets/images/' . basename($matches[0]);
+        }
+
+        if ($role === RoleType::FREELANCER->value) {
+            return self::DEFAULT_FREELANCER_PROFILE_IMAGE;
+        }
+
+        return self::DEFAULT_ADMIN_PROFILE_IMAGE;
     }
 
     private function normalizeAdminInput(array $input): array

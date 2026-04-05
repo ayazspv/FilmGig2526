@@ -84,21 +84,10 @@ class AuthController extends Controller
      */
     public function handleSignupForm(array $params = []): void
     {
-        try {
-            $service = new SignupService(Config::pdo());
-            $result = $service->register($_POST);
-        } catch (Throwable $exception) {
-            $result = [
-                'success' => false,
-                'errors' => [
-                    'general' => 'Unable to connect to the database. Please try again later.',
-                ],
-                'input' => $_POST,
-            ];
-        }
+        $result = $this->attemptSignupRegistration($_POST);
 
         if (($result['success'] ?? false) === true) {
-            $_SESSION['signup_success_message'] = 'Your account has been created. Please log in to continue.';
+            $this->storeSignupSuccessMessage();
 
             $this->redirect('/signin');
         }
@@ -107,6 +96,40 @@ class AuthController extends Controller
             $result['input'] ?? [],
             $result['errors'] ?? []
         );
+    }
+
+    /**
+     * Register a new user and normalize failure handling.
+     */
+    private function attemptSignupRegistration(array $input): array
+    {
+        try {
+            return (new SignupService(Config::pdo()))->register($input);
+        } catch (Throwable $exception) {
+            return $this->buildSignupConnectionFailure($input);
+        }
+    }
+
+    /**
+     * Build a consistent signup failure result for connection errors.
+     */
+    private function buildSignupConnectionFailure(array $input): array
+    {
+        return [
+            'success' => false,
+            'errors' => [
+                'general' => 'Unable to connect to the database. Please try again later.',
+            ],
+            'input' => $input,
+        ];
+    }
+
+    /**
+     * Store the one-time success message shown on signin.
+     */
+    private function storeSignupSuccessMessage(): void
+    {
+        $_SESSION['signup_success_message'] = 'Your account has been created. Please log in to continue.';
     }
 
     /**

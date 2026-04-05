@@ -12,9 +12,7 @@ use App\ViewModels\HomeViewModel;
 class HomeController
 {
 	/**
-	 * Display the home page.
-	 *
-	 * @param array $params Route parameters (unused for this route)
+	 * Render the home page.
 	 */
 	public function index(array $params = []): void
 	{
@@ -25,7 +23,7 @@ class HomeController
 	}
 
 	/**
-	 * Return the homepage data as JSON for client-side rendering.
+	 * Return home page data as JSON for client-side rendering.
 	 */
 	public function apiIndex(array $params = []): void
 	{

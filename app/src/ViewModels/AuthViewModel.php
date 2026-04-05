@@ -25,10 +25,13 @@ class AuthViewModel
         );
     }
 
-    public static function createForResetPassword(): self
+    public static function createForResetPassword(array $oldInput = [], array $errors = [], ?string $successMessage = null): self
     {
         return new self(
             pageTitle: 'Reset Password - FilmGig',
+            oldInput: $oldInput,
+            errors: $errors,
+            successMessage: $successMessage,
         );
     }
 
@@ -46,10 +49,13 @@ class AuthViewModel
         );
     }
 
-    public static function createForForgetPassword(): self
+    public static function createForForgetPassword(array $oldInput = [], array $errors = [], ?string $successMessage = null): self
     {
         return new self(
             pageTitle: 'Forgot Password - FilmGig',
+            oldInput: $oldInput,
+            errors: $errors,
+            successMessage: $successMessage,
         );
     }
 }

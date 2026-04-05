@@ -22,7 +22,9 @@ $router->addRoute('GET', '/signout', ['App\Controllers\AuthController', 'handleS
 $router->addRoute('GET', '/', ['App\Controllers\HomeController', 'index']);
 
 $router->addRoute('GET', '/reset-password', ['App\Controllers\AuthController', 'showResetPasswordForm']);
+$router->addRoute('POST', '/reset-password', ['App\Controllers\AuthController', 'handleResetPasswordForm']);
 $router->addRoute('GET', '/forget-password', ['App\Controllers\AuthController', 'showForgetPasswordForm']);
+$router->addRoute('POST', '/forget-password', ['App\Controllers\AuthController', 'handleForgetPasswordForm']);
 
 $router->addRoute('GET', '/dashboard', ['App\Controllers\DashboardController', 'showDashboard']);
 

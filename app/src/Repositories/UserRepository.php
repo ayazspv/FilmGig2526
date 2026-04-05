@@ -81,6 +81,17 @@ class UserRepository extends Repository implements IUserRepository
         );
     }
 
+    public function updatePassword(int $userId, string $passwordHash): bool
+    {
+        return $this->executeStatement(
+            'UPDATE `user` SET password = :password WHERE userId = :userId',
+            [
+                'userId' => $userId,
+                'password' => $passwordHash,
+            ]
+        );
+    }
+
     public function update(int $userId, array $data): bool
     {
         return $this->executeStatement(

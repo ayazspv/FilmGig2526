@@ -23,6 +23,8 @@ interface IUserRepository
 
 	public function create(array $data): int;
 
+	public function updatePassword(int $userId, string $passwordHash): bool;
+
 	public function update(int $userId, array $data): bool;
 
 	public function delete(int $userId): bool;

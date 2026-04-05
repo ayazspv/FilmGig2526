@@ -3,6 +3,7 @@
 namespace App\ViewModels;
 
 use App\Enums\GigRateType;
+use App\Enums\RoleType;
 use App\Models\Gig;
 use App\Models\ProductionHouse;
 use App\Models\User;
@@ -28,6 +29,10 @@ class GigDetailViewModel
         $companyName = $productionHouse !== null && $productionHouse->getCompanyName() !== ''
             ? $productionHouse->getCompanyName()
             : ($owner !== null ? $owner->getName() : 'Production House');
+        $ownerRole = $owner !== null ? (string) $owner->getRole() : '';
+        $profileUrl = in_array($ownerRole, [RoleType::ADMIN->value, RoleType::PRODUCTION_HOUSE->value], true)
+            ? '/profiles/production-house/' . (string) ($owner?->getUserId() ?? 0)
+            : '';
 
         return new self(
             pageTitle: $gig->getTitle() . ' - FilmGig',
@@ -51,6 +56,7 @@ class GigDetailViewModel
                 'company' => $companyName,
                 'email' => $owner !== null ? $owner->getEmail() : '',
                 'website' => $productionHouse !== null ? $productionHouse->getWebsite() : '',
+                'profileUrl' => $profileUrl,
             ],
             metadata: [
                 ['label' => 'Category', 'value' => $gig->getCategory()],

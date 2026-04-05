@@ -60,6 +60,11 @@ $submissionErrorMessage = $submissionErrorMessage ?? null;
                             <?php if (!empty($contact['email'])): ?>
                                 <p class="mb-0"><strong>Email:</strong> <a href="mailto:<?= htmlspecialchars($contact['email']) ?>"><?= htmlspecialchars($contact['email']) ?></a></p>
                             <?php endif; ?>
+                            <?php if (!empty($contact['profileUrl'])): ?>
+                                <div class="mt-3">
+                                    <a href="<?= htmlspecialchars($contact['profileUrl']) ?>" class="btn btn-outline-dark btn-sm">View Production Profile</a>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </section>

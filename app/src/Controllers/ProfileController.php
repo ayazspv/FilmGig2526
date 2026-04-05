@@ -5,6 +5,8 @@ namespace App\Controllers;
 use App\Config;
 use App\Enums\RoleType;
 use App\Framework\Controller;
+use App\Repositories\ProductionHouseRepository;
+use App\Repositories\UserRepository;
 use App\Services\Interfaces\IProfileService;
 use App\Services\ProfileService;
 use App\ViewModels\AdminProfileViewModel;
@@ -74,6 +76,42 @@ class ProfileController extends Controller
         $viewModel = FreelancerProfileViewModel::createFromData($profileData, $errors, $successMessage);
 
         include __DIR__ . '/../Views/profiles/freelancerProfile.php';
+    }
+
+    /**
+     * Render a read-only public profile page for a production house/admin.
+     */
+    public function showProductionHousePublicProfile(array $params = []): void
+    {
+        $userId = (int) ($params['id'] ?? 0);
+
+        if ($userId <= 0) {
+            $this->redirect('/gigs');
+        }
+
+        $userRepository = new UserRepository(Config::pdo());
+        $productionHouseRepository = new ProductionHouseRepository(Config::pdo());
+
+        $user = $userRepository->findById($userId);
+
+        if ($user === null || !in_array((string) $user->getRole(), [RoleType::ADMIN->value, RoleType::PRODUCTION_HOUSE->value], true)) {
+            $this->redirect('/gigs');
+        }
+
+        $productionHouse = $productionHouseRepository->findByUserId($userId);
+
+        $viewData = [
+            'pageTitle' => trim(($productionHouse?->getCompanyName() ?: $user->getName()) . ' - Production Profile - FilmGig'),
+            'profileImage' => $this->resolvePublicProfileImageUrl($userId),
+            'contactName' => $user->getName(),
+            'companyName' => $productionHouse?->getCompanyName() ?: $user->getName(),
+            'email' => $user->getEmail(),
+            'address' => $user->getAddress(),
+            'website' => $productionHouse?->getWebsite() ?? '',
+            'bio' => $user->getBio(),
+        ];
+
+        include __DIR__ . '/../Views/profiles/productionHousePublicProfile.php';
     }
 
     /**
@@ -188,6 +226,21 @@ class ProfileController extends Controller
         unset($_SESSION[$key]);
 
         return is_array($value) ? $value : [];
+    }
+
+    /**
+     * Resolve a profile image URL for public profile pages.
+     */
+    private function resolvePublicProfileImageUrl(int $userId): string
+    {
+        $pattern = __DIR__ . '/../../public/assets/images/profile-user-' . $userId . '.*';
+        $matches = glob($pattern) ?: [];
+
+        if (!empty($matches)) {
+            return '/assets/images/' . basename($matches[0]);
+        }
+
+        return 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=220&q=80';
     }
 
 }

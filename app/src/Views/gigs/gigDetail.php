@@ -76,16 +76,17 @@ $submissionErrorMessage = $submissionErrorMessage ?? null;
                 </div>
             <?php endif; ?>
 
-            <?php if ($currentRole === 'freelancer'): ?>
+            <?php if ($currentRole === ''): ?>
+                <footer class="text-center">
+                    <a href="/signin" class="btn btn-lg text-white px-4" style="background-color: #B91C1C; border-color: #B91C1C;">Apply Now</a>
+                </footer>
+            <?php elseif ($currentRole === 'freelancer'): ?>
                 <footer class="text-center">
                     <?php if ($hasAlreadyApplied): ?>
-                        <div class="d-flex flex-column align-items-center gap-2">
-                            <button type="button" class="btn btn-lg btn-secondary px-4" disabled>You have already applied for this gig</button>
-                            <a href="/dashboard/submissions" class="btn btn-lg btn-outline-secondary">View My Submissions</a>
-                        </div>
+                        <a href="/dashboard/submissions" class="btn btn-lg btn-outline-secondary">Go to Submissions</a>
                     <?php else: ?>
                         <form method="POST" action="/gigs/<?= htmlspecialchars((string) ($gig['gigId'] ?? 0)) ?>/apply">
-                            <button type="submit" class="btn btn-lg text-white px-4" style="background-color: #B91C1C; border-color: #B91C1C;">Apply for This Gig</button>
+                            <button type="submit" class="btn btn-lg text-white px-4" style="background-color: #B91C1C; border-color: #B91C1C;">Apply Now</button>
                         </form>
                     <?php endif; ?>
                 </footer>

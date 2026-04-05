@@ -43,6 +43,18 @@ class GigController extends Controller
             exit;
         }
 
+        if (strtolower((string) $gig->getStatus()) === 'closed') {
+            http_response_code(404);
+
+            $pageTitle = '404 - Page Not Found';
+            $statusCode = 404;
+            $errorTitle = 'Gig Not Available';
+            $errorMessage = 'This gig has been closed and is no longer available.';
+
+            include __DIR__ . '/../Views/404.php';
+            exit;
+        }
+
         $owner = $userRepository->findById($gig->getOwnerId());
         $productionHouse = $productionHouseRepository->findByUserId($gig->getOwnerId());
 

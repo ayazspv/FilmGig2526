@@ -6,6 +6,7 @@ class Gig
 {
     private int $gigId;            // Integer
     private int $ownerId;          // Foreign Key → Users (int)
+    private string $imageUrl;
     private string $title;
     private string $description;
     private string $category;
@@ -30,6 +31,11 @@ class Gig
     public function getTitle(): string
     {
         return $this->title;
+    }
+
+    public function getImageUrl(): string
+    {
+        return $this->imageUrl;
     }
 
     public function getDescription(): string
@@ -86,6 +92,11 @@ class Gig
     public function setTitle(string $title): void
     {
         $this->title = $title;
+    }
+
+    public function setImageUrl(string $imageUrl): void
+    {
+        $this->imageUrl = $imageUrl;
     }
 
     public function setDescription(string $description): void

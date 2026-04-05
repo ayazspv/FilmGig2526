@@ -2,6 +2,8 @@
 
 namespace App\ViewModels;
 
+use App\Models\Gig;
+
 class GigListingViewModel
 {
     public function __construct(
@@ -79,6 +81,41 @@ class GigListingViewModel
                     'detailUrl' => 'gig-detail',
                 ],
             ],
+        );
+    }
+
+    public static function createFromGigs(array $gigs): self
+    {
+        $default = self::createDefault();
+
+        $normalizedGigs = array_map(
+            static fn(Gig $gig): array => [
+                'title' => $gig->getTitle(),
+                'description' => $gig->getDescription(),
+                'rate' => sprintf('EUR %.2f/%s', $gig->getPayRate(), $gig->getRateType() === 'fixed' ? 'project' : 'hr'),
+                'location' => $gig->getLocation(),
+                'startDate' => $gig->getStartDate(),
+                'category' => $gig->getCategory(),
+                'imageUrl' => $gig->getImageUrl(),
+                'detailUrl' => '/gigs/' . $gig->getGigId(),
+            ],
+            $gigs
+        );
+
+        $selectedCategories = array_values(array_unique(array_map(
+            static fn(Gig $gig): string => strtolower($gig->getCategory()),
+            $gigs
+        )));
+
+        return new self(
+            pageTitle: $default->pageTitle,
+            badgeLabel: $default->badgeLabel,
+            heroTitle: $default->heroTitle,
+            heroDescription: $default->heroDescription,
+            filters: $default->filters,
+            categoryOptions: $default->categoryOptions,
+            selectedCategories: $selectedCategories,
+            gigs: $normalizedGigs,
         );
     }
 }

@@ -21,8 +21,8 @@ $currentRole = (string) ($_SESSION['auth_user_role'] ?? '');
             <section class="row g-4 mb-4">
                 <aside class="col-12 col-lg-6">
                     <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <img src="<?= htmlspecialchars($gig['imageUrl']) ?>" class="card-img-top rounded-top-4" alt="<?= htmlspecialchars($gig['title']) ?>" style="height: 320px; object-fit: cover;">
                         <div class="card-body p-4">
-                            <div class="ratio ratio-16x9 rounded-4 mb-4" style="background: linear-gradient(135deg, #172554 0%, #1F2937 100%);"></div>
                             <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
                                 <span class="badge" style="background-color: #FBBF24; color: #172554;"><?= htmlspecialchars($gig['category']) ?></span>
                                 <span class="badge text-bg-secondary"><?= htmlspecialchars($gig['status']) ?></span>

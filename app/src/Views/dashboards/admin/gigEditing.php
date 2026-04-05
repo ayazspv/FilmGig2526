@@ -37,13 +37,25 @@ $errors = $viewModel->errors ?? [];
                         </div>
                     <?php endif; ?>
 
+                    <?php if (!empty($gigData['imageUrl'])): ?>
+                        <div class="mb-4">
+                            <p class="fw-semibold mb-2" style="color: #172554;">Current Gig Picture</p>
+                            <img src="<?= htmlspecialchars($gigData['imageUrl']) ?>" alt="<?= htmlspecialchars($gigData['title']) ?>" class="img-fluid rounded-4 shadow-sm" style="max-height: 240px; object-fit: cover;">
+                        </div>
+                    <?php endif; ?>
+
                     <form method="POST" enctype="multipart/form-data">
                         <div class="row g-4">
                             <?php foreach ($formFields as $field): ?>
                                 <div class="col-12 <?= $field['type'] === 'textarea' ? 'col-lg-12' : 'col-lg-6' ?>">
                                     <label for="<?= htmlspecialchars($field['name']) ?>" class="form-label fw-semibold"><?= htmlspecialchars($field['label']) ?></label>
 
-                                    <?php if ($field['type'] === 'select'): ?>
+                                    <?php if ($field['type'] === 'file'): ?>
+                                        <input class="form-control form-control-lg" id="<?= htmlspecialchars($field['name']) ?>" name="<?= htmlspecialchars($field['name']) ?>" type="file" accept="image/*">
+                                        <?php if (!empty($field['help'])): ?>
+                                            <div class="form-text"><?= htmlspecialchars($field['help']) ?></div>
+                                        <?php endif; ?>
+                                    <?php elseif ($field['type'] === 'select'): ?>
                                         <select class="form-select form-select-lg" id="<?= htmlspecialchars($field['name']) ?>" name="<?= htmlspecialchars($field['name']) ?>" required>
                                             <?php foreach ($field['options'] as $option): ?>
                                                 <option value="<?= htmlspecialchars($option) ?>"<?= (($gigData[$field['name']] ?? '') === $option) ? ' selected' : '' ?>>

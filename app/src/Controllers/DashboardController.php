@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Config;
 use App\Enums\RoleType;
 use App\Framework\Controller;
+use App\Models\Gig;
 use App\Repositories\GigRepository;
 use App\ViewModels\AdminDashboardViewModel;
 use App\ViewModels\FreelancerDashboardViewModel;
@@ -100,9 +101,17 @@ class DashboardController extends Controller
 
         $input = $this->normalizeGigPostingInput($_POST);
         $errors = $this->validateGigPostingInput($input);
+        $errors = array_merge($errors, $this->validateGigImageUpload($_FILES['image'] ?? [], true));
 
         if (!empty($errors)) {
             $this->renderProductionHouseGigPosting($input, $errors);
+            return;
+        }
+
+        $imageUrl = $this->saveGigImageUpload($_FILES['image'] ?? []);
+
+        if (!empty($errors) || $imageUrl === null) {
+            $this->renderProductionHouseGigPosting($input, $errors ?: ['general' => 'Unable to save the gig picture right now.']);
             return;
         }
 
@@ -110,6 +119,7 @@ class DashboardController extends Controller
             $gigRepository = new GigRepository(Config::pdo());
             $gigRepository->create([
                 'ownerId' => (int) ($_SESSION['auth_user_id'] ?? 0),
+                'imageUrl' => $imageUrl,
                 'title' => $input['title'],
                 'description' => $input['description'],
                 'category' => $input['category'],
@@ -120,6 +130,7 @@ class DashboardController extends Controller
                 'status' => $input['status'],
             ]);
         } catch (Throwable $exception) {
+            $this->deleteGigImageFile($imageUrl);
             $this->renderProductionHouseGigPosting($input, [
                 'general' => 'Unable to save this gig right now. Please try again later.',
             ]);
@@ -178,15 +189,25 @@ class DashboardController extends Controller
 
         $input = $this->normalizeGigPostingInput($_POST);
         $errors = $this->validateGigPostingInput($input);
+        $errors = array_merge($errors, $this->validateGigImageUpload($_FILES['image'] ?? [], false));
 
         if (!empty($errors)) {
             $this->renderProductionHouseGigEditing($existingGig, $input, $errors);
             return;
         }
 
+        $previousImageUrl = $existingGig->getImageUrl();
+        $imageUrl = $this->saveGigImageUpload($_FILES['image'] ?? [], $previousImageUrl);
+
+        if (!empty($errors) || $imageUrl === null) {
+            $this->renderProductionHouseGigEditing($existingGig, $input, $errors ?: ['general' => 'Unable to save the gig picture right now.']);
+            return;
+        }
+
         try {
             $gigRepository->update($gigId, [
                 'ownerId' => (int) ($_SESSION['auth_user_id'] ?? 0),
+                'imageUrl' => $imageUrl,
                 'title' => $input['title'],
                 'description' => $input['description'],
                 'category' => $input['category'],
@@ -197,10 +218,18 @@ class DashboardController extends Controller
                 'status' => $input['status'],
             ]);
         } catch (Throwable $exception) {
+            if ($imageUrl !== $previousImageUrl) {
+                $this->deleteGigImageFile($imageUrl);
+            }
+
             $this->renderProductionHouseGigEditing($existingGig, $input, [
                 'general' => 'Unable to update this gig right now. Please try again later.',
             ]);
             return;
+        }
+
+        if ($imageUrl !== $previousImageUrl) {
+            $this->deleteGigImageFile($previousImageUrl);
         }
 
         $_SESSION['gig_success_message'] = 'Gig updated successfully.';
@@ -234,6 +263,8 @@ class DashboardController extends Controller
             $this->redirect('/dashboard/gigs');
         }
 
+        $this->deleteGigImageFile($existingGig->getImageUrl());
+
         $_SESSION['gig_success_message'] = 'Gig deleted successfully.';
 
         $this->redirect('/dashboard/gigs');
@@ -261,7 +292,7 @@ class DashboardController extends Controller
     /**
      * Render the production house gig editing form with existing gig data.
      */
-    private function renderProductionHouseGigEditing(object $gig, array $oldInput = [], array $errors = []): void
+    private function renderProductionHouseGigEditing(Gig $gig, array $oldInput = [], array $errors = []): void
     {
         $viewModel = AdminGigEditingViewModel::createWithGig($gig, $oldInput, $errors);
 
@@ -325,6 +356,128 @@ class DashboardController extends Controller
         }
 
         return $errors;
+    }
+
+    /**
+     * Validate an uploaded gig image before saving.
+     */
+    private function validateGigImageUpload(array $file, bool $required): array
+    {
+        $errors = [];
+
+        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+            if ($required) {
+                $errors['image'] = 'Gig picture is required.';
+            }
+
+            return $errors;
+        }
+
+        if (($file['error'] ?? UPLOAD_ERR_OK) === UPLOAD_ERR_INI_SIZE || ($file['error'] ?? UPLOAD_ERR_OK) === UPLOAD_ERR_FORM_SIZE) {
+            $errors['image'] = 'Gig picture must be smaller than 5 MB.';
+
+            return $errors;
+        }
+
+        if (($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
+            $errors['image'] = 'The gig picture could not be uploaded.';
+
+            return $errors;
+        }
+
+        if (($file['size'] ?? 0) > 5 * 1024 * 1024) {
+            $errors['image'] = 'Gig picture must be smaller than 5 MB.';
+
+            return $errors;
+        }
+
+        $imageInfo = @getimagesize((string) ($file['tmp_name'] ?? ''));
+
+        if ($imageInfo === false) {
+            $errors['image'] = 'Gig picture must be a valid image file.';
+            return $errors;
+        }
+
+        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        $mimeType = (string) ($imageInfo['mime'] ?? '');
+
+        if (!in_array($mimeType, $allowedMimeTypes, true)) {
+            $errors['image'] = 'Gig picture must be JPG, PNG, GIF, or WEBP.';
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Save an uploaded gig image into the public images directory.
+     */
+    private function saveGigImageUpload(array $file, ?string $fallbackImageUrl = null): ?string
+    {
+        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+            return $fallbackImageUrl;
+        }
+
+        $validationErrors = $this->validateGigImageUpload($file, false);
+
+        if (!empty($validationErrors)) {
+            return $fallbackImageUrl;
+        }
+
+        $imageInfo = getimagesize((string) $file['tmp_name']);
+        $extension = $this->imageMimeTypeToExtension((string) ($imageInfo['mime'] ?? ''));
+
+        if ($extension === null) {
+            return $fallbackImageUrl;
+        }
+
+        $directory = __DIR__ . '/../../public/assets/images';
+
+        if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
+            return $fallbackImageUrl;
+        }
+
+        $fileName = sprintf('gig-upload-%s.%s', bin2hex(random_bytes(8)), $extension);
+        $targetPath = $directory . '/' . $fileName;
+
+        if (!move_uploaded_file((string) $file['tmp_name'], $targetPath)) {
+            return $fallbackImageUrl;
+        }
+
+        return '/assets/images/' . $fileName;
+    }
+
+    /**
+     * Delete a gig image file from the public images directory.
+     */
+    private function deleteGigImageFile(?string $imageUrl): void
+    {
+        if ($imageUrl === null || $imageUrl === '') {
+            return;
+        }
+
+        if (!str_starts_with($imageUrl, '/assets/images/')) {
+            return;
+        }
+
+        $imagePath = __DIR__ . '/../../public' . $imageUrl;
+
+        if (is_file($imagePath)) {
+            @unlink($imagePath);
+        }
+    }
+
+    /**
+     * Map an image MIME type to a file extension.
+     */
+    private function imageMimeTypeToExtension(string $mimeType): ?string
+    {
+        return match ($mimeType) {
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'image/webp' => 'webp',
+            default => null,
+        };
     }
 
     /**

@@ -13,7 +13,8 @@ class GigController
 {
     public function showGigListing(array $params = []): void
     {
-        $viewModel = GigListingViewModel::createDefault();
+        $gigRepository = new GigRepository(Config::pdo());
+        $viewModel = GigListingViewModel::createFromGigs($gigRepository->findAll());
 
         include __DIR__ . '/../Views/gigs/gigListing.php';
     }

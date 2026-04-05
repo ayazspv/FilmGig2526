@@ -23,6 +23,7 @@ class AdminGigPostingViewModel
             heroTitle: 'Post a New Gig Opening',
             heroDescription: 'Publish a detailed gig brief to attract the right freelancers quickly.',
             formFields: [
+                ['name' => 'image', 'label' => 'Gig Picture', 'type' => 'file', 'help' => 'PNG, JPG, GIF, or WEBP up to 5 MB'],
                 ['name' => 'title', 'label' => 'Gig Title', 'type' => 'text', 'placeholder' => 'e.g. Camera Operator for Short Film'],
                 ['name' => 'description', 'label' => 'Description', 'type' => 'textarea', 'placeholder' => 'Provide a detailed description of the gig...'],
                 ['name' => 'category', 'label' => 'Category', 'type' => 'select', 'options' => ['Camera', 'Editing', 'Sound', 'Production', 'Animation']],

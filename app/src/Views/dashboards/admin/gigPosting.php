@@ -43,7 +43,12 @@ $errors = $viewModel->errors ?? [];
                                 <div class="col-12 <?= $field['type'] === 'textarea' ? 'col-lg-12' : 'col-lg-6' ?>">
                                     <label for="<?= htmlspecialchars($field['name']) ?>" class="form-label fw-semibold"><?= htmlspecialchars($field['label']) ?></label>
 
-                                    <?php if ($field['type'] === 'select'): ?>
+                                    <?php if ($field['type'] === 'file'): ?>
+                                        <input class="form-control form-control-lg" id="<?= htmlspecialchars($field['name']) ?>" name="<?= htmlspecialchars($field['name']) ?>" type="file" accept="image/*" required>
+                                        <?php if (!empty($field['help'])): ?>
+                                            <div class="form-text"><?= htmlspecialchars($field['help']) ?></div>
+                                        <?php endif; ?>
+                                    <?php elseif ($field['type'] === 'select'): ?>
                                         <select class="form-select form-select-lg" id="<?= htmlspecialchars($field['name']) ?>" name="<?= htmlspecialchars($field['name']) ?>" required>
                                             <?php foreach ($field['options'] as $option): ?>
                                                 <option value="<?= htmlspecialchars($option) ?>"<?= (($defaultValues[$field['name']] ?? '') === $option) ? ' selected' : '' ?>>

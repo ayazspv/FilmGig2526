@@ -60,10 +60,11 @@ class GigRepository extends Repository implements IGigRepository
 	public function create(array $data): int
 	{
 		return $this->insertAndReturnId(
-			'INSERT INTO gig (ownerId, title, description, category, location, startDate, rateType, payRate, status)
-			 VALUES (:ownerId, :title, :description, :category, :location, :startDate, :rateType, :payRate, :status)',
+			'INSERT INTO gig (ownerId, imageUrl, title, description, category, location, startDate, rateType, payRate, status)
+			 VALUES (:ownerId, :imageUrl, :title, :description, :category, :location, :startDate, :rateType, :payRate, :status)',
 			[
 				'ownerId' => $data['ownerId'],
+				'imageUrl' => $data['imageUrl'],
 				'title' => $data['title'],
 				'description' => $data['description'],
 				'category' => $data['category'],
@@ -84,6 +85,7 @@ class GigRepository extends Repository implements IGigRepository
 		return $this->executeStatement(
 			'UPDATE gig
 			 SET ownerId = :ownerId,
+				 imageUrl = :imageUrl,
 				 title = :title,
 				 description = :description,
 				 category = :category,
@@ -96,6 +98,7 @@ class GigRepository extends Repository implements IGigRepository
 			[
 				'gigId' => $gigId,
 				'ownerId' => $data['ownerId'],
+				'imageUrl' => $data['imageUrl'],
 				'title' => $data['title'],
 				'description' => $data['description'],
 				'category' => $data['category'],
@@ -124,6 +127,7 @@ class GigRepository extends Repository implements IGigRepository
 		$gig = new Gig();
 		$gig->setGigId((int) $row['gigId']);
 		$gig->setOwnerId((int) $row['ownerId']);
+		$gig->setImageUrl((string) ($row['imageUrl'] ?? ''));
 		$gig->setTitle((string) $row['title']);
 		$gig->setDescription((string) $row['description']);
 		$gig->setCategory((string) $row['category']);

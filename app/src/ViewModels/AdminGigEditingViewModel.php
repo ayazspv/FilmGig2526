@@ -25,6 +25,7 @@ class AdminGigEditingViewModel
             heroTitle: 'Update Existing Gig',
             heroDescription: 'Adjust status, rates, and details to keep your gig posting up to date.',
             formFields: [
+                ['name' => 'image', 'label' => 'Gig Picture', 'type' => 'file', 'help' => 'Upload a new picture to replace the current one.'],
                 ['name' => 'title', 'label' => 'Gig Title', 'type' => 'text', 'placeholder' => 'e.g. Camera Operator for Short Film'],
                 ['name' => 'description', 'label' => 'Description', 'type' => 'textarea', 'placeholder' => 'Provide a detailed description of the gig...'],
                 ['name' => 'category', 'label' => 'Category', 'type' => 'select', 'options' => ['Camera', 'Editing', 'Sound', 'Production', 'Animation']],
@@ -36,6 +37,7 @@ class AdminGigEditingViewModel
             ],
             gigData: [
                 'gigId' => 0,
+                'imageUrl' => '',
                 'title' => '',
                 'description' => '',
                 'category' => 'Camera',
@@ -54,6 +56,7 @@ class AdminGigEditingViewModel
 
         $gigData = [
             'gigId' => $gig->getGigId(),
+            'imageUrl' => $gig->getImageUrl(),
             'title' => $gig->getTitle(),
             'description' => $gig->getDescription(),
             'category' => $gig->getCategory(),

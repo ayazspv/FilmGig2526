@@ -113,6 +113,8 @@ class SignupService
 
         if ($input['username'] === '') {
             $errors['username'] = 'Username is required.';
+        } elseif ($this->userRepository->usernameExists($input['username'])) {
+            $errors['username'] = 'This username is already taken.';
         }
 
         if ($input['name'] === '') {

@@ -43,13 +43,13 @@ class AuthController
 
     public function handleSigninForm(array $params = []): void
     {
-        $email = strtolower(trim((string) ($_POST['email'] ?? '')));
+        $username = trim((string) ($_POST['username'] ?? ''));
         $password = (string) ($_POST['password'] ?? '');
 
         $errors = [];
 
-        if ($email === '') {
-            $errors['email'] = 'Email address is required.';
+        if ($username === '') {
+            $errors['username'] = 'Username is required.';
         }
 
         if ($password === '') {
@@ -60,7 +60,7 @@ class AuthController
             $viewModel = AuthViewModel::createForSignin(
                 null,
                 $errors,
-                ['email' => $email]
+                ['username' => $username]
             );
 
             include __DIR__ . '/../Views/auth/signin.php';
@@ -69,12 +69,12 @@ class AuthController
 
         try {
             $userRepository = new UserRepository(Config::pdo());
-            $user = $userRepository->findByEmail($email);
+            $user = $userRepository->findByUsername($username);
         } catch (Throwable $exception) {
             $viewModel = AuthViewModel::createForSignin(
                 null,
                 ['general' => 'Unable to sign in right now. Please try again later.'],
-                ['email' => $email]
+                ['username' => $username]
             );
 
             include __DIR__ . '/../Views/auth/signin.php';
@@ -84,8 +84,8 @@ class AuthController
         if ($user === null || !password_verify($password, $user->getPassword())) {
             $viewModel = AuthViewModel::createForSignin(
                 null,
-                ['general' => 'Invalid email or password.'],
-                ['email' => $email]
+                ['general' => 'Invalid username or password.'],
+                ['username' => $username]
             );
 
             include __DIR__ . '/../Views/auth/signin.php';
@@ -104,7 +104,7 @@ class AuthController
             $viewModel = AuthViewModel::createForSignin(
                 null,
                 ['general' => 'Your account role is not supported for login.'],
-                ['email' => $email]
+                ['username' => $username]
             );
 
             include __DIR__ . '/../Views/auth/signin.php';

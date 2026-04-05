@@ -24,6 +24,7 @@ CREATE TABLE `user` (
   `kvkNr` int(8) NOT NULL,
   `createdAt` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`userId`),
+  UNIQUE KEY `uniq_users_username` (`username`),
   UNIQUE KEY `uniq_users_email` (`email`),
   UNIQUE KEY `uniq_users_kvk` (`kvkNr`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

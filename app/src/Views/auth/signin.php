@@ -43,8 +43,8 @@
 
                             <form action="/signin" method="POST">
                                 <div class="mb-3">
-                                    <label for="email" class="form-label fw-semibold">Email address</label>
-                                    <input type="email" class="form-control form-control-lg" id="email" name="email" value="<?= $escape((string) ($viewModel->oldInput['email'] ?? '')) ?>" required>
+                                    <label for="username" class="form-label fw-semibold">Username</label>
+                                    <input type="text" class="form-control form-control-lg" id="username" name="username" value="<?= $escape((string) ($viewModel->oldInput['username'] ?? '')) ?>" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="password" class="form-label fw-semibold">Password</label>

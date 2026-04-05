@@ -11,6 +11,10 @@ interface IUserRepository
 	/** @return User[] */
 	public function findAll(): array;
 
+	public function findByUsername(string $username): ?User;
+
+	public function usernameExists(string $username): bool;
+
 	public function findByEmail(string $email): ?User;
 
 	public function emailExists(string $email): bool;

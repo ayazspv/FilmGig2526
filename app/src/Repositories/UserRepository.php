@@ -44,6 +44,18 @@ class UserRepository extends Repository implements IUserRepository
         return $row !== null;
     }
 
+    public function findByUsername(string $username): ?User
+    {
+        $row = $this->fetchOneRow('SELECT * FROM `user` WHERE username = :username LIMIT 1', ['username' => $username]);
+
+        return $row !== null ? $this->mapRowToModel($row) : null;
+    }
+
+    public function usernameExists(string $username): bool
+    {
+        return $this->findByUsername($username) !== null;
+    }
+
     public function findByEmail(string $email): ?User
     {
         $row = $this->fetchOneRow('SELECT * FROM `user` WHERE email = :email LIMIT 1', ['email' => $email]);

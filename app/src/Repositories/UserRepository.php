@@ -8,16 +8,25 @@ use App\Repositories\Interfaces\IUserRepository;
 
 class UserRepository extends Repository implements IUserRepository
 {
+	/**
+	 * Return the backing user table name.
+	 */
     protected function tableName(): string
     {
         return '`user`';
     }
 
+	/**
+	 * Return the primary key column for users.
+	 */
     protected function primaryKey(): string
     {
         return 'userId';
     }
 
+	/**
+	 * Find a user by id.
+	 */
     public function findById(int $userId): ?User
     {
         $row = $this->findRowById($userId);
@@ -25,6 +34,9 @@ class UserRepository extends Repository implements IUserRepository
         return $row !== null ? $this->mapRowToModel($row) : null;
     }
 
+	/**
+	 * Return all users.
+	 */
     public function findAll(): array
     {
         $rows = $this->findAllRowsFromTable();
@@ -32,11 +44,17 @@ class UserRepository extends Repository implements IUserRepository
         return array_map(fn(array $row): User => $this->mapRowToModel($row), $rows);
     }
 
+	/**
+	 * Check whether an email exists.
+	 */
     public function emailExists(string $email): bool
     {
         return $this->findByEmail($email) !== null;
     }
 
+	/**
+	 * Check whether a KVK number exists.
+	 */
     public function kvkNrExists(string $kvkNr): bool
     {
         $row = $this->fetchOneRow('SELECT userId FROM `user` WHERE kvkNr = :kvkNr LIMIT 1', ['kvkNr' => $kvkNr]);
@@ -44,6 +62,9 @@ class UserRepository extends Repository implements IUserRepository
         return $row !== null;
     }
 
+	/**
+	 * Find a user by username.
+	 */
     public function findByUsername(string $username): ?User
     {
         $row = $this->fetchOneRow('SELECT * FROM `user` WHERE username = :username LIMIT 1', ['username' => $username]);
@@ -51,11 +72,17 @@ class UserRepository extends Repository implements IUserRepository
         return $row !== null ? $this->mapRowToModel($row) : null;
     }
 
+	/**
+	 * Check whether a username exists.
+	 */
     public function usernameExists(string $username): bool
     {
         return $this->findByUsername($username) !== null;
     }
 
+	/**
+	 * Find a user by email address.
+	 */
     public function findByEmail(string $email): ?User
     {
         $row = $this->fetchOneRow('SELECT * FROM `user` WHERE email = :email LIMIT 1', ['email' => $email]);
@@ -63,6 +90,9 @@ class UserRepository extends Repository implements IUserRepository
         return $row !== null ? $this->mapRowToModel($row) : null;
     }
 
+	/**
+	 * Create a new user record.
+	 */
     public function create(array $data): int
     {
         return $this->insertAndReturnId(
@@ -81,6 +111,9 @@ class UserRepository extends Repository implements IUserRepository
         );
     }
 
+	/**
+	 * Update a user's password hash.
+	 */
     public function updatePassword(int $userId, string $passwordHash): bool
     {
         return $this->executeStatement(
@@ -92,6 +125,9 @@ class UserRepository extends Repository implements IUserRepository
         );
     }
 
+	/**
+	 * Update a full user record.
+	 */
     public function update(int $userId, array $data): bool
     {
         return $this->executeStatement(
@@ -119,11 +155,17 @@ class UserRepository extends Repository implements IUserRepository
         );
     }
 
+	/**
+	 * Delete a user record.
+	 */
     public function delete(int $userId): bool
     {
         return $this->deleteRowById($userId);
     }
 
+	/**
+	 * Map a database row to a User model.
+	 */
     private function mapRowToModel(array $row): User
     {
         return new User(

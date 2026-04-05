@@ -8,16 +8,25 @@ use App\Repositories\Interfaces\IGigRepository;
 
 class GigRepository extends Repository implements IGigRepository
 {
+	/**
+	 * Return the backing gig table name.
+	 */
 	protected function tableName(): string
 	{
 		return 'gig';
 	}
 
+	/**
+	 * Return the primary key column for gigs.
+	 */
 	protected function primaryKey(): string
 	{
 		return 'gigId';
 	}
 
+	/**
+	 * Find a gig by id.
+	 */
 	public function findById(int $gigId): ?Gig
 	{
 		$row = $this->findRowById($gigId);
@@ -25,6 +34,9 @@ class GigRepository extends Repository implements IGigRepository
 		return $row !== null ? $this->mapRowToModel($row) : null;
 	}
 
+	/**
+	 * Return all gigs.
+	 */
 	public function findAll(): array
 	{
 		$rows = $this->findAllRowsFromTable();
@@ -32,6 +44,9 @@ class GigRepository extends Repository implements IGigRepository
 		return array_map(fn(array $row): Gig => $this->mapRowToModel($row), $rows);
 	}
 
+	/**
+	 * Return all gigs owned by a user.
+	 */
 	public function findByOwnerId(int $ownerId): array
 	{
 		$rows = $this->fetchAllRows('SELECT * FROM gig WHERE ownerId = :ownerId', ['ownerId' => $ownerId]);
@@ -39,6 +54,9 @@ class GigRepository extends Repository implements IGigRepository
 		return array_map(fn(array $row): Gig => $this->mapRowToModel($row), $rows);
 	}
 
+	/**
+	 * Create a gig record.
+	 */
 	public function create(array $data): int
 	{
 		return $this->insertAndReturnId(
@@ -58,6 +76,9 @@ class GigRepository extends Repository implements IGigRepository
 		);
 	}
 
+	/**
+	 * Update a gig record.
+	 */
 	public function update(int $gigId, array $data): bool
 	{
 		return $this->executeStatement(
@@ -87,11 +108,17 @@ class GigRepository extends Repository implements IGigRepository
 		);
 	}
 
+	/**
+	 * Delete a gig record.
+	 */
 	public function delete(int $gigId): bool
 	{
 		return $this->deleteRowById($gigId);
 	}
 
+	/**
+	 * Map a database row to a Gig model.
+	 */
 	private function mapRowToModel(array $row): Gig
 	{
 		$gig = new Gig();

@@ -16,4 +16,5 @@ This folder contains feature-by-feature documentation for the main application f
 - [Submission](Submission/Submission.md)
 - [Submission Admin Review](Submission/AdminReview.md)
 - [Profile](Profile/Profile.md)
+- [Profile Editing](Profile/ProfileEditing.md)
 - [Settings](Settings/Settings.md)

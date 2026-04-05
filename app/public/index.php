@@ -45,6 +45,7 @@ $router->addRoute('POST', '/dashboard/submissions/{id}/review', ['App\Controller
 
 
 $router->addRoute('GET', '/profile', ['App\Controllers\ProfileController', 'showProfile']);
+$router->addRoute('POST', '/profile', ['App\Controllers\ProfileController', 'handleProfileUpdate']);
 $router->addRoute('GET', '/settings', ['App\Controllers\SettingsController', 'showSettings']);
 
 $router->addRoute('GET', '/gigs', ['App\Controllers\GigController', 'showGigListing']);

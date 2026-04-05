@@ -10,36 +10,32 @@ class FreelancerProfileViewModel
         public readonly string $heroTitle,
         public readonly string $heroDescription,
         public readonly string $profileImage,
-        public readonly array $summary,
-        public readonly array $contact,
-        public readonly array $personal,
-        public readonly array $nichePreferences,
+        public readonly array $form,
+        public readonly array $errors,
+        public readonly ?string $successMessage,
     ) {
     }
 
-    public static function createDefault(): self
+    public static function createFromData(array $profileData, array $errors = [], ?string $successMessage = null): self
     {
+        $form = $profileData['form'] ?? [];
+
         return new self(
             pageTitle: 'Freelancer Profile - FilmGig',
             badgeLabel: 'Freelancer Profile',
-            heroTitle: 'Samira Jansen',
-            heroDescription: 'Public profile details and freelancer specialization.',
-            profileImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=220&q=80',
-            summary: [
-                'name' => 'Samira Jansen',
-                'username' => 'camera_pro_nl',
-                'role' => 'Freelancer',
+            heroTitle: (string) ($form['fullName'] ?? 'Freelancer Profile'),
+            heroDescription: 'Update your personal information and profile picture.',
+            profileImage: (string) ($profileData['profileImage'] ?? ''),
+            form: [
+                'username' => (string) ($form['username'] ?? ''),
+                'fullName' => (string) ($form['fullName'] ?? ''),
+                'email' => (string) ($form['email'] ?? ''),
+                'address' => (string) ($form['address'] ?? ''),
+                'dateOfBirth' => (string) ($form['dateOfBirth'] ?? ''),
+                'bio' => (string) ($form['bio'] ?? ''),
             ],
-            contact: [
-                'email' => 'samira@filmgig.nl',
-                'phone' => '+31 6 9876 1234',
-                'address' => 'Utrecht Creative District, NL',
-            ],
-            personal: [
-                'dateOfBirth' => '1996-09-14',
-                'bio' => 'Freelance camera operator and editor with 5+ years of experience in commercial and documentary projects.',
-            ],
-            nichePreferences: ['Camera Operation', 'Documentary', 'Post-Production'],
+            errors: $errors,
+            successMessage: $successMessage,
         );
     }
 }

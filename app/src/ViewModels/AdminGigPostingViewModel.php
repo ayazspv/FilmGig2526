@@ -2,6 +2,9 @@
 
 namespace App\ViewModels;
 
+use App\Enums\GigCategory;
+use App\Enums\GigRateType;
+
 class AdminGigPostingViewModel
 {
     public function __construct(
@@ -26,20 +29,20 @@ class AdminGigPostingViewModel
                 ['name' => 'image', 'label' => 'Gig Picture', 'type' => 'file', 'help' => 'PNG, JPG, GIF, or WEBP up to 5 MB'],
                 ['name' => 'title', 'label' => 'Gig Title', 'type' => 'text', 'placeholder' => 'e.g. Camera Operator for Short Film'],
                 ['name' => 'description', 'label' => 'Description', 'type' => 'textarea', 'placeholder' => 'Provide a detailed description of the gig...'],
-                ['name' => 'category', 'label' => 'Category', 'type' => 'select', 'options' => ['Camera', 'Editing', 'Sound', 'Production', 'Animation']],
+                ['name' => 'category', 'label' => 'Category', 'type' => 'select', 'options' => GigCategory::selectOptions()],
                 ['name' => 'location', 'label' => 'Location', 'type' => 'text', 'placeholder' => 'e.g. Amsterdam, Netherlands'],
                 ['name' => 'startDate', 'label' => 'Start Date', 'type' => 'date'],
-                ['name' => 'rateType', 'label' => 'Rate Type', 'type' => 'select', 'options' => ['hourly', 'fixed']],
+                ['name' => 'rateType', 'label' => 'Rate Type', 'type' => 'select', 'options' => GigRateType::options()],
                 ['name' => 'payRate', 'label' => 'Pay Rate (EUR)', 'type' => 'number', 'placeholder' => 50],
                 ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => ['active', 'closed']],
             ],
             defaultValues: [
                 'title' => '',
                 'description' => '',
-                'category' => 'Camera',
+                'category' => GigCategory::CAMERA->value,
                 'location' => '',
                 'startDate' => '',
-                'rateType' => 'hourly',
+                'rateType' => GigRateType::HOURLY->value,
                 'payRate' => '50',
                 'status' => 'active',
             ],

@@ -2,6 +2,7 @@
 
 namespace App\ViewModels;
 
+use App\Enums\GigRateType;
 use App\Models\Gig;
 use App\Models\ProductionHouse;
 use App\Models\User;
@@ -21,7 +22,8 @@ class GigDetailViewModel
 
     public static function createFromGig(Gig $gig, ?User $owner = null, ?ProductionHouse $productionHouse = null): self
     {
-        $rateTypeLabel = $gig->getRateType() === 'fixed' ? 'Fixed' : 'Hourly';
+        $rateType = GigRateType::tryFrom($gig->getRateType());
+        $rateTypeLabel = $rateType?->label() ?? ucfirst($gig->getRateType());
         $statusLabel = ucfirst($gig->getStatus());
         $companyName = $productionHouse !== null && $productionHouse->getCompanyName() !== ''
             ? $productionHouse->getCompanyName()

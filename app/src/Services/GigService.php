@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\GigCategory;
+use App\Enums\GigRateType;
 use App\Framework\Service;
 use App\Repositories\GigRepository;
 use App\Services\Interfaces\IGigService;
@@ -292,9 +294,7 @@ class GigService extends Service implements IGigService
         }
 
         // Validate category
-        $validCategories = ['Camera', 'Editing', 'Sound', 'Production', 'Animation'];
-
-        if (!in_array($input['category'], $validCategories, true)) {
+        if (!GigCategory::isValid($input['category'])) {
             $errors['category'] = 'Please choose a valid category.';
         }
 
@@ -309,7 +309,7 @@ class GigService extends Service implements IGigService
         }
 
         // Validate rate type
-        if (!in_array($input['rateType'], ['hourly', 'fixed'], true)) {
+        if (!GigRateType::isValid($input['rateType'])) {
             $errors['rateType'] = 'Please choose a valid rate type.';
         }
 

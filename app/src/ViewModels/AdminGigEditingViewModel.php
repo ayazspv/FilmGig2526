@@ -2,6 +2,8 @@
 
 namespace App\ViewModels;
 
+use App\Enums\GigCategory;
+use App\Enums\GigRateType;
 use App\Models\Gig;
 
 class AdminGigEditingViewModel 
@@ -28,10 +30,10 @@ class AdminGigEditingViewModel
                 ['name' => 'image', 'label' => 'Gig Picture', 'type' => 'file', 'help' => 'Upload a new picture to replace the current one.'],
                 ['name' => 'title', 'label' => 'Gig Title', 'type' => 'text', 'placeholder' => 'e.g. Camera Operator for Short Film'],
                 ['name' => 'description', 'label' => 'Description', 'type' => 'textarea', 'placeholder' => 'Provide a detailed description of the gig...'],
-                ['name' => 'category', 'label' => 'Category', 'type' => 'select', 'options' => ['Camera', 'Editing', 'Sound', 'Production', 'Animation']],
+                ['name' => 'category', 'label' => 'Category', 'type' => 'select', 'options' => GigCategory::selectOptions()],
                 ['name' => 'location', 'label' => 'Location', 'type' => 'text', 'placeholder' => 'e.g. Amsterdam, Netherlands'],
                 ['name' => 'startDate', 'label' => 'Start Date', 'type' => 'date'],
-                ['name' => 'rateType', 'label' => 'Rate Type', 'type' => 'select', 'options' => ['hourly', 'fixed']],
+                ['name' => 'rateType', 'label' => 'Rate Type', 'type' => 'select', 'options' => GigRateType::options()],
                 ['name' => 'payRate', 'label' => 'Pay Rate (EUR)', 'type' => 'number', 'placeholder' => 50],
                 ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => ['active', 'closed']],
             ],
@@ -40,10 +42,10 @@ class AdminGigEditingViewModel
                 'imageUrl' => '',
                 'title' => '',
                 'description' => '',
-                'category' => 'Camera',
+                'category' => GigCategory::CAMERA->value,
                 'location' => '',
                 'startDate' => '',
-                'rateType' => 'hourly',
+                'rateType' => GigRateType::HOURLY->value,
                 'payRate' => '50',
                 'status' => 'active',
             ],

@@ -57,9 +57,9 @@ $errors = $viewModel->errors ?? [];
                                         <?php endif; ?>
                                     <?php elseif ($field['type'] === 'select'): ?>
                                         <select class="form-select form-select-lg" id="<?= htmlspecialchars($field['name']) ?>" name="<?= htmlspecialchars($field['name']) ?>" required>
-                                            <?php foreach ($field['options'] as $option): ?>
-                                                <option value="<?= htmlspecialchars($option) ?>"<?= (($gigData[$field['name']] ?? '') === $option) ? ' selected' : '' ?>>
-                                                    <?= htmlspecialchars(ucfirst((string) $option)) ?>
+                                            <?php foreach ($field['options'] as $optionValue => $optionLabel): ?>
+                                                <option value="<?= htmlspecialchars((string) $optionValue) ?>"<?= (($gigData[$field['name']] ?? '') === $optionValue) ? ' selected' : '' ?>>
+                                                    <?= htmlspecialchars((string) $optionLabel) ?>
                                                 </option>
                                             <?php endforeach; ?>
                                         </select>

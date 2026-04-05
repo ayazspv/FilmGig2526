@@ -2,6 +2,8 @@
 
 namespace App\ViewModels;
 
+use App\Enums\GigCategory;
+use App\Enums\GigRateType;
 use App\Models\Gig;
 
 class GigListingViewModel
@@ -31,13 +33,7 @@ class GigListingViewModel
                 'location' => 'Randstad, Netherlands',
                 'minimumRate' => 45,
             ],
-            categoryOptions: [
-                'camera' => 'Camera',
-                'editing' => 'Editing',
-                'sound' => 'Sound',
-                'production' => 'Production',
-                'animation' => 'Animation',
-            ],
+            categoryOptions: GigCategory::filterOptions(),
             selectedCategories: ['camera', 'production'],
             gigs: [
                 [
@@ -92,10 +88,14 @@ class GigListingViewModel
             static fn(Gig $gig): array => [
                 'title' => $gig->getTitle(),
                 'description' => $gig->getDescription(),
-                'rate' => sprintf('EUR %.2f/%s', $gig->getPayRate(), $gig->getRateType() === 'fixed' ? 'project' : 'hr'),
+                'rate' => sprintf(
+                    'EUR %.2f/%s',
+                    $gig->getPayRate(),
+                    GigRateType::tryFrom($gig->getRateType())?->suffix() ?? 'hr'
+                ),
                 'location' => $gig->getLocation(),
                 'startDate' => $gig->getStartDate(),
-                'category' => $gig->getCategory(),
+                'category' => GigCategory::tryFrom($gig->getCategory())?->label() ?? $gig->getCategory(),
                 'imageUrl' => $gig->getImageUrl(),
                 'detailUrl' => '/gigs/' . $gig->getGigId(),
             ],
@@ -103,7 +103,7 @@ class GigListingViewModel
         );
 
         $selectedCategories = array_values(array_unique(array_map(
-            static fn(Gig $gig): string => strtolower($gig->getCategory()),
+            static fn(Gig $gig): string => GigCategory::tryFrom($gig->getCategory())?->slug() ?? strtolower($gig->getCategory()),
             $gigs
         )));
 

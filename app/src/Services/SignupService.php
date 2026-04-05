@@ -230,6 +230,11 @@ class SignupService extends Service implements ISignupService
 
         if (!$this->isValidDate($input['dateOfBirth'])) {
             $errors['dateOfBirth'] = 'Please enter a valid date of birth.';
+            return;
+        }
+
+        if (!$this->isAtLeast18YearsOld($input['dateOfBirth'])) {
+            $errors['dateOfBirth'] = 'You must be at least 18 years old to sign up.';
         }
     }
 
@@ -316,5 +321,17 @@ class SignupService extends Service implements ISignupService
         $dateTime = date_create_from_format('Y-m-d', $date);
 
         return $dateTime !== false && $dateTime->format('Y-m-d') === $date;
+    }
+
+    /**
+     * Check if the date of birth indicates the person is at least 18 years old.
+     */
+    private function isAtLeast18YearsOld(string $dateOfBirth): bool
+    {
+        $birthDate = date_create_from_format('Y-m-d', $dateOfBirth);
+        $today = new \DateTime('today');
+        $age = $today->diff($birthDate)->y;
+
+        return $age >= 18;
     }
 }

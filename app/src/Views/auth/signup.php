@@ -114,7 +114,8 @@
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label for="dateOfBirth" class="form-label fw-semibold mt-2">Date of Birth</label>
-                                            <input type="date" class="form-control form-control-lg" id="dateOfBirth" name="dateOfBirth" data-signup-required value="<?= $escape((string) ($viewModel->oldInput['dateOfBirth'] ?? '')) ?>">
+                                            <input type="date" class="form-control form-control-lg" id="dateOfBirth" name="dateOfBirth" data-signup-required value="<?= $escape((string) ($viewModel->oldInput['dateOfBirth'] ?? '')) ?>" max="<?= date('Y-m-d', strtotime('-18 years')) ?>">
+                                            <small class="text-muted">You must be at least 18 years old.</small>
                                         </div>
                                     </div>
                                 </div>

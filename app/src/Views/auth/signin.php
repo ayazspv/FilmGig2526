@@ -1,4 +1,7 @@
+<?php $escape = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); ?>
+<?php /** @var \App\ViewModels\AuthViewModel $viewModel */ ?>
 <div class="d-flex flex-column min-vh-100">
+    <?php $pageTitle = $viewModel->pageTitle; ?>
     <?php include __DIR__ . '/../partials/header.php'; ?>
     <section class="py-5 flex-grow-1 d-flex align-items-center" style="background-color: #E5E7EB;">
         <div class="container">
@@ -18,7 +21,13 @@
                             <h1 class="h3 fw-bold mb-2" style="color: #172554;">Sign In</h1>
                             <p class="mb-4" style="color: #1F2937;">Access your profile and apply to new gigs.</p>
 
-                            <form action="/SigninAction" method="POST">
+                            <?php if (!empty($viewModel->successMessage)) : ?>
+                                <div class="alert alert-success border-0" role="alert">
+                                    <?= $escape((string) $viewModel->successMessage) ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <form action="/signin" method="POST">
                                 <div class="mb-3">
                                     <label for="email" class="form-label fw-semibold">Email address</label>
                                     <input type="email" class="form-control form-control-lg" id="email" name="email" required>

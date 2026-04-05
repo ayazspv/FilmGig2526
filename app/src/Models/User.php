@@ -5,7 +5,7 @@ namespace App\Models;
 class User
 {
     private int $userId;         // Primary Key (int)
-    private int $username;
+    private string $username;
     private string $name;        // VARCHAR(255)
     private string $email;       // VARCHAR(255)
     private string $password;    // VARCHAR(255)
@@ -17,7 +17,7 @@ class User
 
     public function __construct(
         int $userId,
-        int $username,
+        string $username,
         string $name,
         string $email,
         string $password,
@@ -45,7 +45,7 @@ class User
         return $this->userId;
     }
 
-    public function getUsername(): int
+    public function getUsername(): string
     {
         return $this->username;
     }
@@ -96,7 +96,7 @@ class User
         $this->userId = $userId;
     }
 
-    public function setUsername(int $username): void
+    public function setUsername(string $username): void
     {
         $this->username = $username;
     }

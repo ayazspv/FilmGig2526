@@ -74,7 +74,7 @@ $gigs = $viewModel->gigs;
                         <?php foreach ($gigs as $gig): ?>
                             <article class="col-12 col-md-6">
                                 <div class="card border-0 shadow-sm rounded-4 h-100">
-                                    <img src="<?= htmlspecialchars($gig['image']) ?>" class="card-img-top rounded-top-4" alt="<?= htmlspecialchars($gig['title']) ?>"
+                                    <img src="<?= htmlspecialchars($gig['imageUrl']) ?>" class="card-img-top rounded-top-4" alt="<?= htmlspecialchars($gig['title']) ?>"
                                         style="height: 180px; object-fit: cover;">
                                     <div class="card-body p-4 d-flex flex-column">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -84,7 +84,7 @@ $gigs = $viewModel->gigs;
                                         <h3 class="h5 fw-bold mb-2" style="color: #172554;"><?= htmlspecialchars($gig['title']) ?></h3>
                                         <p class="mb-3" style="color: #1F2937;"><?= htmlspecialchars($gig['description']) ?></p>
                                         <p class="small mb-1" style="color: #1F2937;"><i class="fa-solid fa-location-dot me-2"></i><?= htmlspecialchars($gig['location']) ?></p>
-                                        <p class="small mb-3" style="color: #1F2937;"><i class="fa-regular fa-clock me-2"></i>Starts at <?= htmlspecialchars($gig['startTime']) ?></p>
+                                        <p class="small mb-3" style="color: #1F2937;"><i class="fa-regular fa-calendar me-2"></i><?= htmlspecialchars($gig['startDate']) ?></p>
                                         <a href="<?= htmlspecialchars($gig['detailUrl']) ?>" class="btn mt-auto text-white" style="background-color: #172554; border-color: #172554;">View Gig</a>
                                     </div>
                                 </div>

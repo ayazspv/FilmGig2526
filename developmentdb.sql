@@ -53,6 +53,7 @@ CREATE TABLE `freelancer` (
 CREATE TABLE `gig` (
   `gigId` int(11) NOT NULL AUTO_INCREMENT,
   `ownerId` int(11) NOT NULL,
+  `imageUrl` varchar(255) NOT NULL,
   `title` varchar(255) NOT NULL,
   `description` text NOT NULL,
   `category` varchar(100) NOT NULL,
@@ -83,17 +84,19 @@ CREATE TABLE `submission` (
 INSERT INTO `user` (`userId`, `username`, `name`, `email`, `password`, `role`, `address`, `bio`, `kvkNr`, `createdAt`) VALUES
 (1, 'filmgig_admin', 'FilmGig Studios BV', 'admin@filmgig.nl', '$2y$12$wH0YxjQ9JpY5j6n9Q8m2C.3g6pV8gDg1nJx7b5Q3t5x5G4f6m2y4O', 'productionHouse', 'Rotterdam Media Park, NL', 'Niche film production marketplace.', 12345678, '2026-04-05 09:00:00'),
 (2, 'samira_pro', 'Samira Jansen', 'samira@filmgig.nl', '$2y$12$wH0YxjQ9JpY5j6n9Q8m2C.3g6pV8gDg1nJx7b5Q3t5x5G4f6m2y4O', 'freelancer', 'Utrecht Creative District, NL', 'Freelance camera operator and editor.', 22345678, '2026-04-05 09:05:00'),
-(3, 'james_admin', 'James Vermeer', 'james@filmgig.nl', '$2y$12$wH0YxjQ9JpY5j6n9Q8m2C.3g6pV8gDg1nJx7b5Q3t5x5G4f6m2y4O', 'admin', 'Amsterdam, NL', 'Platform administrator.', 32345678, '2026-04-05 09:10:00');
+(3, 'james_admin', 'James Vermeer', 'james@filmgig.nl', '$2y$12$wH0YxjQ9JpY5j6n9Q8m2C.3g6pV8gDg1nJx7b5Q3t5x5G4f6m2y4O', 'admin', 'Amsterdam, NL', 'Platform administrator.', 32345678, '2026-04-05 09:10:00'),
+(4, 'ayazpour', 'Ayaz Pour', 'ayaz@pour.com', '$2y$12$AM1JLH8dTTQrPUoePWxhPeTT8QQRkDEY0R5S6tXiHC6hh28Z1rI7K', 'productionHouse', 'Amsterdam, NL', 'Platform administrator.', 18273645, '2026-04-05 09:10:00');
 
 INSERT INTO `productionHouse` (`productionHouseId`, `userId`, `companyName`, `website`, `createdAt`) VALUES
-(1, 1, 'FilmGig Studios BV', 'https://filmgig.nl', '2026-04-05 09:00:00');
+(1, 1, 'FilmGig Studios BV', 'https://filmgig.nl', '2026-04-05 09:00:00'),
+(2, 4, 'Ayaz Pour Productions', 'https://ayazpour.com', '2026-04-05 09:10:00');
 
 INSERT INTO `freelancer` (`freelancerId`, `userId`, `dateOfBirth`, `createdAt`) VALUES
 (1, 2, '1996-09-14', '2026-04-05 09:05:00');
 
-INSERT INTO `gig` (`gigId`, `ownerId`, `title`, `description`, `category`, `location`, `startDate`, `rateType`, `payRate`, `status`, `createdAt`) VALUES
-(1, 1, 'Documentary Camera Operator', 'Capture interviews and b-roll footage for a 3-day documentary production.', 'Camera', 'Amsterdam, Netherlands', '2026-04-12', 'hourly', 55.00, 'active', '2026-04-05 09:15:00'),
-(2, 1, 'Commercial Video Editor', 'Edit a set of social-first ad videos with a fast turnaround.', 'Editing', 'The Hague, Netherlands', '2026-04-14', 'hourly', 60.00, 'active', '2026-04-05 09:20:00');
+INSERT INTO `gig` (`gigId`, `ownerId`, `imageUrl`, `title`, `description`, `category`, `location`, `startDate`, `rateType`, `payRate`, `status`, `createdAt`) VALUES
+(1, 4, '/assets/images/gig-documentary-camera.svg', 'Documentary Camera Operator', 'Capture interviews and b-roll footage for a 3-day documentary production.', 'Camera', 'Amsterdam, Netherlands', '2026-04-12', 'hourly', 55.00, 'active', '2026-04-05 09:15:00'),
+(2, 4, '/assets/images/gig-commercial-video-editor.svg', 'Commercial Video Editor', 'Edit a set of social-first ad videos with a fast turnaround.', 'Editing', 'The Hague, Netherlands', '2026-04-14', 'hourly', 60.00, 'active', '2026-04-05 09:20:00');
 
 INSERT INTO `submission` (`submissionId`, `gigId`, `freelancerId`, `status`, `submittedAt`) VALUES
 (1, 1, 1, 'pending', '2026-04-05 09:30:00'),

@@ -4,6 +4,10 @@ FROM php:fpm
 RUN apt-get update \
     && apt-get install -y --no-install-recommends git unzip libzip-dev \
     && docker-php-ext-install pdo pdo_mysql \
+    && echo 'upload_max_filesize = 5M' >> /usr/local/etc/php/php.ini-production \
+    && echo 'post_max_size = 5M' >> /usr/local/etc/php/php.ini-production \
+    && echo 'upload_max_filesize = 5M' >> /usr/local/etc/php/php.ini-development \
+    && echo 'post_max_size = 5M' >> /usr/local/etc/php/php.ini-development \
     && curl -sS https://getcomposer.org/installer -o composer-setup.php \
     && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
     && rm composer-setup.php \

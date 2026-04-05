@@ -1,4 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-dark py-3" style="background-color: #172554;">
+    <?php $currentRole = (string) ($_SESSION['auth_user_role'] ?? ''); ?>
     <div class="container">
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="/">
             <span class="badge rounded-pill" style="background-color: #FBBF24; color: #172554;">FG</span>
@@ -13,11 +14,13 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/dashboard">Dashboard</a>
                 </li>
+                <?php if ($currentRole === 'productionHouse'): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard/gigs">My Gigs</a>
+                    </li>
+                <?php endif; ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="/gigs">Gigs List</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/post-gig">Add Gigs</a>
+                    <a class="nav-link" href="/dashboard/gigs/new">Add Gigs</a>
                 </li>
             </ul>
             <div class="dropdown mt-3 mt-lg-0">

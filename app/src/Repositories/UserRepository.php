@@ -2,12 +2,34 @@
 
 namespace App\Repositories;
 
-use PDO;
+use App\Framework\Repository;
+use App\Models\User;
+use App\Repositories\Interfaces\IUserRepository;
 
-class UserRepository
+class UserRepository extends Repository implements IUserRepository
 {
-    public function __construct(private readonly PDO $pdo)
+    protected function tableName(): string
     {
+        return '`user`';
+    }
+
+    protected function primaryKey(): string
+    {
+        return 'userId';
+    }
+
+    public function findById(int $userId): ?User
+    {
+        $row = $this->findRowById($userId);
+
+        return $row !== null ? $this->mapRowToModel($row) : null;
+    }
+
+    public function findAll(): array
+    {
+        $rows = $this->findAllRowsFromTable();
+
+        return array_map(fn(array $row): User => $this->mapRowToModel($row), $rows);
     }
 
     public function emailExists(string $email): bool
@@ -17,40 +39,81 @@ class UserRepository
 
     public function kvkNrExists(string $kvkNr): bool
     {
-        $statement = $this->pdo->prepare('SELECT userId FROM user WHERE kvkNr = :kvkNr LIMIT 1');
-        $statement->execute(['kvkNr' => $kvkNr]);
+        $row = $this->fetchOneRow('SELECT userId FROM `user` WHERE kvkNr = :kvkNr LIMIT 1', ['kvkNr' => $kvkNr]);
 
-        return (bool) $statement->fetchColumn();
+        return $row !== null;
     }
 
-    public function findByEmail(string $email): ?array
+    public function findByEmail(string $email): ?User
     {
-        $statement = $this->pdo->prepare('SELECT * FROM user WHERE email = :email LIMIT 1');
-        $statement->execute(['email' => $email]);
+        $row = $this->fetchOneRow('SELECT * FROM `user` WHERE email = :email LIMIT 1', ['email' => $email]);
 
-        $user = $statement->fetch();
-
-        return $user ?: null;
+        return $row !== null ? $this->mapRowToModel($row) : null;
     }
 
     public function create(array $data): int
     {
-        $statement = $this->pdo->prepare(
-            'INSERT INTO user (username, name, email, password, role, address, bio, kvkNr)
-             VALUES (:username, :name, :email, :password, :role, :address, :bio, :kvkNr)'
+        return $this->insertAndReturnId(
+            'INSERT INTO `user` (username, name, email, password, role, address, bio, kvkNr)
+             VALUES (:username, :name, :email, :password, :role, :address, :bio, :kvkNr)',
+            [
+                'username' => $data['username'],
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => $data['password'],
+                'role' => $data['role'],
+                'address' => $data['address'] ?? '',
+                'bio' => $data['bio'] ?? '',
+                'kvkNr' => $data['kvkNr'],
+            ]
         );
+    }
 
-        $statement->execute([
-            'username' => $data['username'],
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => $data['password'],
-            'role' => $data['role'],
-            'address' => $data['address'],
-            'bio' => $data['bio'],
-            'kvkNr' => $data['kvkNr'],
-        ]);
+    public function update(int $userId, array $data): bool
+    {
+        return $this->executeStatement(
+            'UPDATE `user`
+             SET username = :username,
+                 name = :name,
+                 email = :email,
+                 password = :password,
+                 role = :role,
+                 address = :address,
+                 bio = :bio,
+                 kvkNr = :kvkNr
+             WHERE userId = :userId',
+            [
+                'userId' => $userId,
+                'username' => $data['username'],
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => $data['password'],
+                'role' => $data['role'],
+                'address' => $data['address'] ?? '',
+                'bio' => $data['bio'] ?? '',
+                'kvkNr' => $data['kvkNr'],
+            ]
+        );
+    }
 
-        return (int) $this->pdo->lastInsertId();
+    public function delete(int $userId): bool
+    {
+        return $this->deleteRowById($userId);
+    }
+
+    private function mapRowToModel(array $row): User
+    {
+        return new User(
+            (int) $row['userId'],
+            (string) $row['username'],
+            (string) $row['name'],
+            (string) $row['email'],
+            (string) $row['password'],
+            (string) $row['role'],
+            (string) ($row['address'] ?? ''),
+            (string) ($row['bio'] ?? ''),
+            (int) $row['kvkNr'],
+            (string) $row['createdAt'],
+        );
     }
 }

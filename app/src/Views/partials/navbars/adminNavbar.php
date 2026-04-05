@@ -18,6 +18,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/dashboard/gigs">My Gigs</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard/submissions/received">Submissions</a>
+                    </li>
                 <?php endif; ?>
                 <li class="nav-item">
                     <a class="nav-link" href="/dashboard/gigs/new">Add Gigs</a>

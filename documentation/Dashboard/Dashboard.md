@@ -14,6 +14,8 @@ Route authenticated users to the correct dashboard and protect role-specific das
 - `DashboardController::showAdminGigListing()`
 - `DashboardController::showAdminGigPosting()`
 - `DashboardController::showAdminGigEditing()`
+- `DashboardController::showAdminSubmissionReview()`
+- `DashboardController::handleAdminSubmissionReview()`
 - `Controller::requireAuthentication()`
 - `Controller::requireRole()`
 - `Controller::authUserRole()`
@@ -32,6 +34,7 @@ Route authenticated users to the correct dashboard and protect role-specific das
 - `AdminGigListingViewModel::createDefault()`
 - `AdminGigPostingViewModel::createDefault()`
 - `AdminGigEditingViewModel::createDefault()`
+- `AdminSubmissionReviewViewModel::createFromSubmissions()`
 
 ## Repository Files Used
 - None directly in the current dashboard controller layer.
@@ -46,5 +49,7 @@ Route authenticated users to the correct dashboard and protect role-specific das
 4. Admin and production house users are routed to the admin dashboard.
 5. Freelancer users are routed to the freelancer dashboard.
 6. Role-specific gig management pages are protected with `Controller::requireRole()`.
-7. If a user is not authenticated, they are redirected to `/signin`.
-8. If a user is authenticated but tries to access the wrong role page, they are redirected to `/dashboard`.
+7. The admin dashboard also provides a shortcut to the submission review page.
+8. The admin submission review page is protected with the admin role check.
+9. If a user is not authenticated, they are redirected to `/signin`.
+10. If a user is authenticated but tries to access the wrong role page, they are redirected to `/dashboard`.

@@ -2,6 +2,7 @@
 $dashboardStats = $viewModel->stats;
 $primaryTable = $viewModel->primaryTable;
 $secondaryList = $viewModel->secondaryList;
+$currentRole = (string) ($_SESSION['auth_user_role'] ?? '');
 ?>
 
 <div class="d-flex flex-column min-vh-100" style="background-color: #E5E7EB;">
@@ -13,8 +14,15 @@ $secondaryList = $viewModel->secondaryList;
             <section class="rounded-4 p-4 p-md-5 mb-4 text-white shadow-sm"
                 style="background: linear-gradient(120deg, #172554 0%, #1F2937 100%);">
                 <span class="badge mb-3" style="background-color: #FBBF24; color: #172554;"><?= htmlspecialchars($viewModel->badgeLabel) ?></span>
-                <h1 class="display-6 fw-bold mb-2">Welcome, <?php echo isset($_SESSION['name']) ? htmlspecialchars($_SESSION['name']) : 'User'; ?></h1>
-                <p class="mb-0"><?= htmlspecialchars($viewModel->heroDescription) ?></p>
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
+                    <div>
+                        <h1 class="display-6 fw-bold mb-2">Welcome, <?php echo isset($_SESSION['name']) ? htmlspecialchars($_SESSION['name']) : 'User'; ?></h1>
+                        <p class="mb-0"><?= htmlspecialchars($viewModel->heroDescription) ?></p>
+                    </div>
+                    <?php if ($currentRole === 'productionHouse'): ?>
+                        <a href="/dashboard/submissions/received" class="btn btn-warning fw-semibold" style="color: #172554;">Review Submissions</a>
+                    <?php endif; ?>
+                </div>
             </section>
 
             <!-- Dashboard Status -->

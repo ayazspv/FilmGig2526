@@ -37,6 +37,8 @@ $router->addRoute('POST', '/dashboard/gigs/{id}', ['App\Controllers\DashboardCon
 $router->addRoute('POST', '/dashboard/gigs/{id}/delete', ['App\Controllers\DashboardController', 'handleProductionHouseGigDeletion']);
 $router->addRoute('GET', '/dashboard/submissions', ['App\Controllers\DashboardController', 'showFreelancerSubmissions']);
 $router->addRoute('POST', '/dashboard/submissions/{id}/withdraw', ['App\Controllers\DashboardController', 'handleFreelancerSubmissionWithdrawal']);
+$router->addRoute('GET', '/dashboard/submissions/received', ['App\Controllers\DashboardController', 'showProductionHouseSubmissions']);
+$router->addRoute('POST', '/dashboard/submissions/{id}/review', ['App\Controllers\DashboardController', 'handleProductionHouseSubmissionReview']);
 
 
 

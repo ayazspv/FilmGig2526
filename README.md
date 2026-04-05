@@ -65,7 +65,7 @@ FilmGig2526/
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/ayazspv/FilmGig2526
 cd FilmGig2526
 ```
 

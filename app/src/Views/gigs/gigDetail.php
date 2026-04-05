@@ -4,6 +4,9 @@ $gig = $viewModel->gig;
 $contact = $viewModel->contact;
 $metadata = $viewModel->metadata;
 $currentRole = (string) ($_SESSION['auth_user_role'] ?? '');
+$hasAlreadyApplied = $hasAlreadyApplied ?? false;
+$submissionSuccessMessage = $submissionSuccessMessage ?? null;
+$submissionErrorMessage = $submissionErrorMessage ?? null;
 ?>
 
 <div class="d-flex flex-column min-vh-100" style="background-color: #E5E7EB;">
@@ -61,9 +64,30 @@ $currentRole = (string) ($_SESSION['auth_user_role'] ?? '');
                 </section>
             </section>
 
+            <?php if ($submissionSuccessMessage !== null): ?>
+                <div class="alert alert-success shadow-sm border-0 rounded-4 mb-4">
+                    <?= htmlspecialchars($submissionSuccessMessage) ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($submissionErrorMessage !== null): ?>
+                <div class="alert alert-danger shadow-sm border-0 rounded-4 mb-4">
+                    <?= htmlspecialchars($submissionErrorMessage) ?>
+                </div>
+            <?php endif; ?>
+
             <?php if ($currentRole === 'freelancer'): ?>
                 <footer class="text-center">
-                    <button class="btn btn-lg text-white px-4" style="background-color: #B91C1C; border-color: #B91C1C;">Apply for This Gig</button>
+                    <?php if ($hasAlreadyApplied): ?>
+                        <div class="d-flex flex-column align-items-center gap-2">
+                            <button type="button" class="btn btn-lg btn-secondary px-4" disabled>You have already applied for this gig</button>
+                            <a href="/dashboard/submissions" class="btn btn-lg btn-outline-secondary">View My Submissions</a>
+                        </div>
+                    <?php else: ?>
+                        <form method="POST" action="/gigs/<?= htmlspecialchars((string) ($gig['gigId'] ?? 0)) ?>/apply">
+                            <button type="submit" class="btn btn-lg text-white px-4" style="background-color: #B91C1C; border-color: #B91C1C;">Apply for This Gig</button>
+                        </form>
+                    <?php endif; ?>
                 </footer>
             <?php endif; ?>
         </div>

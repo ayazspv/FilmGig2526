@@ -35,6 +35,7 @@ class GigDetailViewModel
             heroTitle: $gig->getTitle(),
             heroDescription: $gig->getDescription(),
             gig: [
+                'gigId' => $gig->getGigId(),
                 'title' => $gig->getTitle(),
                 'imageUrl' => $gig->getImageUrl(),
                 'description' => $gig->getDescription(),

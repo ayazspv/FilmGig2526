@@ -14,10 +14,10 @@
                     <a class="nav-link" href="/dashboard">Dashboard</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="gigs">Find Gigs</a>
+                    <a class="nav-link" href="/gigs">Find Gigs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/dashboard">My Gigs</a>
+                    <a class="nav-link" href="/dashboard/submissions">My Submissions</a>
                 </li>
             </ul>
             <div class="dropdown mt-3 mt-lg-0">

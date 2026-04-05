@@ -9,9 +9,11 @@ use App\Models\Gig;
 use App\Services\GigService;
 use App\ViewModels\AdminDashboardViewModel;
 use App\ViewModels\FreelancerDashboardViewModel;
+use App\ViewModels\FreelancerSubmissionsViewModel;
 use App\ViewModels\AdminGigPostingViewModel;
 use App\ViewModels\AdminGigEditingViewModel;
 use App\ViewModels\AdminGigListingViewModel;
+use App\Services\SubmissionService;
 
 /**
  * DashboardController handles dashboard routes and gig management.
@@ -69,6 +71,41 @@ class DashboardController extends Controller
         $viewModel = FreelancerDashboardViewModel::createFreelancerDefault();
 
         include __DIR__ . '/../Views/dashboards/freelancerDashboard.php';
+    }
+
+    /**
+     * Render the freelancer submissions page.
+     */
+    public function showFreelancerSubmissions(array $params = []): void
+    {
+        $this->requireRole([RoleType::FREELANCER->value]);
+
+        $submissions = $this->getSubmissionService()->getFreelancerSubmissions($this->getAuthenticatedOwnerId());
+
+        $this->renderFreelancerSubmissions(
+            $submissions,
+            $this->consumeSubmissionFlashMessage('submission_success_message'),
+            $this->consumeSubmissionFlashMessage('submission_error_message')
+        );
+    }
+
+    /**
+     * Withdraw a pending freelancer submission.
+     */
+    public function handleFreelancerSubmissionWithdrawal(array $params = []): void
+    {
+        $this->requireRole([RoleType::FREELANCER->value]);
+
+        $submissionId = (int) ($params['id'] ?? 0);
+
+        if ($submissionId <= 0) {
+            $this->redirect('/dashboard/submissions');
+        }
+
+        $result = $this->getSubmissionService()->withdrawSubmission($submissionId, $this->getAuthenticatedOwnerId());
+        $this->flashSubmissionResult($result, 'Your submission has been withdrawn.', 'Unable to withdraw your submission right now.');
+
+        $this->redirect('/dashboard/submissions');
     }
 
     /**
@@ -316,5 +353,47 @@ class DashboardController extends Controller
     {
         $_SESSION['gig_success_message'] = $message;
         $this->redirect('/dashboard/gigs');
+    }
+
+    /**
+     * Build a submission service instance.
+     */
+    private function getSubmissionService(): SubmissionService
+    {
+        return new SubmissionService(Config::pdo());
+    }
+
+    /**
+     * Render the freelancer submissions page.
+     */
+    private function renderFreelancerSubmissions(array $submissions, ?string $successMessage = null, ?string $errorMessage = null): void
+    {
+        $viewModel = FreelancerSubmissionsViewModel::createFromSubmissions($submissions);
+
+        include __DIR__ . '/../Views/dashboards/freelancer/submissions.php';
+    }
+
+    /**
+     * Consume a one-time submission flash message.
+     */
+    private function consumeSubmissionFlashMessage(string $key): ?string
+    {
+        $message = $_SESSION[$key] ?? null;
+        unset($_SESSION[$key]);
+
+        return $message !== null ? (string) $message : null;
+    }
+
+    /**
+     * Store the submission result message in session.
+     */
+    private function flashSubmissionResult(array $result, string $successFallback, string $errorFallback): void
+    {
+        if (($result['success'] ?? false) === true) {
+            $_SESSION['submission_success_message'] = (string) ($result['message'] ?? $successFallback);
+            return;
+        }
+
+        $_SESSION['submission_error_message'] = (string) (($result['errors']['general'] ?? $errorFallback));
     }
 }

@@ -22,6 +22,11 @@ interface ISubmissionRepository
 	public function findByGigId(int $gigId): array;
 
 	/**
+	 * Find a submission for a specific gig and freelancer pair.
+	 */
+	public function findByGigIdAndFreelancerId(int $gigId, int $freelancerId): ?Submission;
+
+	/**
 	 * Find submissions for a specific freelancer.
 	 */
 	public function findByFreelancerId(int $freelancerId): array;

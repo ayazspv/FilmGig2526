@@ -43,9 +43,12 @@ $recentActions = $viewModel->recentActions;
             <section class="mb-4 col-12 w-100">
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                             <div class="card-body p-4">
-                                <h2 class="h4 fw-bold mb-3" style="color: #172554;">
-                            <?= htmlspecialchars($applications['title']) ?>
-                        </h2>
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+                                    <h2 class="h4 fw-bold mb-0" style="color: #172554;">
+                                        <?= htmlspecialchars($applications['title']) ?>
+                                    </h2>
+                                    <a href="/dashboard/submissions" class="btn btn-sm btn-outline-secondary">Open Submissions</a>
+                                </div>
                         <div class="table-responsive">
                             <table class="table align-middle mb-0">
                                 <thead>

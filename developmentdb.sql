@@ -82,21 +82,26 @@ CREATE TABLE `submission` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `user` (`userId`, `username`, `name`, `email`, `password`, `role`, `address`, `bio`, `kvkNr`, `createdAt`) VALUES
-(1, 'filmgig_admin', 'FilmGig Studios BV', 'admin@filmgig.nl', '$2y$12$wH0YxjQ9JpY5j6n9Q8m2C.3g6pV8gDg1nJx7b5Q3t5x5G4f6m2y4O', 'productionHouse', 'Rotterdam Media Park, NL', 'Niche film production marketplace.', 12345678, '2026-04-05 09:00:00'),
-(2, 'samira_pro', 'Samira Jansen', 'samira@filmgig.nl', '$2y$12$wH0YxjQ9JpY5j6n9Q8m2C.3g6pV8gDg1nJx7b5Q3t5x5G4f6m2y4O', 'freelancer', 'Utrecht Creative District, NL', 'Freelance camera operator and editor.', 22345678, '2026-04-05 09:05:00'),
-(3, 'james_admin', 'James Vermeer', 'james@filmgig.nl', '$2y$12$wH0YxjQ9JpY5j6n9Q8m2C.3g6pV8gDg1nJx7b5Q3t5x5G4f6m2y4O', 'admin', 'Amsterdam, NL', 'Platform administrator.', 32345678, '2026-04-05 09:10:00'),
-(4, 'ayazpour', 'Ayaz Pour', 'ayaz@pour.com', '$2y$12$AM1JLH8dTTQrPUoePWxhPeTT8QQRkDEY0R5S6tXiHC6hh28Z1rI7K', 'productionHouse', 'Amsterdam, NL', 'Platform administrator.', 18273645, '2026-04-05 09:10:00');
+(1, 'production', 'Ayaz Pour', 'admin@filmgig.nl', '$2y$12$SFxrCL4cERMaicrsrZMPK.RLzk6H/T2LHlF7J1m0sxM5XI.W.F486', 'productionHouse', 'Rotterdam Media Park, NL', 'Niche film production marketplace.', 12345678, '2026-04-05 09:00:00'),
+(2, 'freelancer', 'Alex Johnson', 'freelancer@filmgig.nl', '$2y$12$SFxrCL4cERMaicrsrZMPK.RLzk6H/T2LHlF7J1m0sxM5XI.W.F486', 'freelancer', 'Utrecht Creative District, NL', 'Freelance camera operator and editor.', 22345678, '2026-04-05 09:05:00');
 
 INSERT INTO `productionHouse` (`productionHouseId`, `userId`, `companyName`, `website`, `createdAt`) VALUES
-(1, 1, 'FilmGig Studios BV', 'https://filmgig.nl', '2026-04-05 09:00:00'),
-(2, 4, 'Ayaz Pour Productions', 'https://ayazpour.com', '2026-04-05 09:10:00');
+(1, 1, 'FilmGig Studios BV', 'https://filmgig.nl', '2026-04-05 09:00:00');
 
 INSERT INTO `freelancer` (`freelancerId`, `userId`, `dateOfBirth`, `createdAt`) VALUES
 (1, 2, '1996-09-14', '2026-04-05 09:05:00');
 
 INSERT INTO `gig` (`gigId`, `ownerId`, `imageUrl`, `title`, `description`, `category`, `location`, `startDate`, `rateType`, `payRate`, `status`, `createdAt`) VALUES
-(1, 4, '/assets/images/gig-documentary-camera.svg', 'Documentary Camera Operator', 'Capture interviews and b-roll footage for a 3-day documentary production.', 'Camera', 'Amsterdam, Netherlands', '2026-04-12', 'hourly', 55.00, 'active', '2026-04-05 09:15:00'),
-(2, 4, '/assets/images/gig-commercial-video-editor.svg', 'Commercial Video Editor', 'Edit a set of social-first ad videos with a fast turnaround.', 'Editing', 'The Hague, Netherlands', '2026-04-14', 'hourly', 60.00, 'active', '2026-04-05 09:20:00');
+(1, 1, '/assets/images/thumbnail1.svg', 'Documentary Camera Operator', 'Capture interviews and b-roll footage for a 3-day documentary production.', 'Camera', 'Amsterdam, Netherlands', '2026-04-12', 'hourly', 55.00, 'active', '2026-04-05 09:15:00'),
+(2, 1, '/assets/images/thumbnail2.svg', 'Commercial Video Editor', 'Edit a set of social-first ad videos with a fast turnaround.', 'Editing', 'The Hague, Netherlands', '2026-04-14', 'hourly', 60.00, 'active', '2026-04-05 09:20:00'),
+(3, 1, '/assets/images/thumbnail1.svg', 'Sound Designer', 'Create immersive sound design for indie short film.', 'Audio', 'Rotterdam, Netherlands', '2026-04-15', 'fixed', 800.00, 'active', '2026-04-05 09:25:00'),
+(4, 1, '/assets/images/thumbnail2.svg', 'Boom Operator', 'Professional boom operation for TV commercial shoot (2 days).', 'Audio', 'Amsterdam, Netherlands', '2026-04-18', 'hourly', 45.00, 'active', '2026-04-05 09:30:00'),
+(5, 1, '/assets/images/thumbnail1.svg', 'Color Grader', 'Grade and color correct 15-minute music video.', 'Editing', 'Utrecht, Netherlands', '2026-04-20', 'fixed', 1200.00, 'active', '2026-04-05 09:35:00'),
+(6, 1, '/assets/images/thumbnail2.svg', 'Production Assistant', 'General PA work on feature film set (5 days).', 'Production', 'Amsterdam, Netherlands', '2026-04-16', 'hourly', 25.00, 'active', '2026-04-05 09:40:00'),
+(7, 1, '/assets/images/thumbnail1.svg', 'Gaffer', 'Lighting technician for corporate video shoot.', 'Camera', 'The Hague, Netherlands', '2026-04-17', 'hourly', 65.00, 'active', '2026-04-05 09:45:00'),
+(8, 1, '/assets/images/thumbnail2.svg', 'Visual Effects Artist', 'Create VFX for 30-second promotional video.', 'Editing', 'Rotterdam, Netherlands', '2026-04-22', 'fixed', 1500.00, 'active', '2026-04-05 09:50:00'),
+(9, 1, '/assets/images/thumbnail1.svg', 'Set Designer', 'Design and build sets for short film production.', 'Production', 'Eindhoven, Netherlands', '2026-04-19', 'fixed', 950.00, 'active', '2026-04-05 09:55:00'),
+(10, 1, '/assets/images/thumbnail2.svg', 'Motion Graphics Lead', 'Lead motion graphics for animated documentary series.', 'Editing', 'Amsterdam, Netherlands', '2026-04-25', 'fixed', 2000.00, 'active', '2026-04-05 10:00:00');
 
 INSERT INTO `submission` (`submissionId`, `gigId`, `freelancerId`, `status`, `submittedAt`) VALUES
 (1, 1, 1, 'pending', '2026-04-05 09:30:00'),

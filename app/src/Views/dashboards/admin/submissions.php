@@ -96,6 +96,9 @@ $errorMessage = $errorMessage ?? null;
                                                 <td>
                                                     <div class="d-flex flex-wrap gap-2">
                                                         <a href="<?= htmlspecialchars($submission['detailUrl']) ?>" class="btn btn-sm text-white" style="background-color: #172554; border-color: #172554;">View Gig</a>
+                                                        <?php if (!empty($submission['freelancerProfileUrl'])): ?>
+                                                            <a href="<?= htmlspecialchars($submission['freelancerProfileUrl']) ?>" class="btn btn-sm btn-outline-secondary">View Freelancer Profile</a>
+                                                        <?php endif; ?>
                                                         <?php if ($submission['canReview']): ?>
                                                             <form method="POST" action="/dashboard/submissions/<?= htmlspecialchars((string) $submission['submissionId']) ?>/review" class="d-inline d-flex flex-wrap gap-2">
                                                                 <button type="submit" name="decision" value="accepted" class="btn btn-sm btn-success">Accept</button>

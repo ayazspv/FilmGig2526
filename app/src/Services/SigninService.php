@@ -81,18 +81,6 @@ class SigninService extends Service implements ISigninService
     }
 
     /**
-     * Return a standardized failure payload.
-     */
-    private function buildFailureResult(array $errors, array $input): array
-    {
-        return [
-            'success' => false,
-            'errors' => $errors,
-            'input' => $input,
-        ];
-    }
-
-    /**
      * Return the failure payload used when the repository cannot be reached.
      */
     private function buildRepositoryFailureResult(array $input): array

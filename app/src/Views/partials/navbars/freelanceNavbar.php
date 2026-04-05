@@ -11,10 +11,10 @@
         <div class="collapse navbar-collapse" id="navbarNavFreelance">
             <ul class="navbar-nav mx-auto gap-lg-2">
                 <li class="nav-item">
-                    <a class="nav-link" href="/dashboard">Dashboard</a>
+                    <a class="nav-link" href="/gigs">Find Gigs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/gigs">Find Gigs</a>
+                    <a class="nav-link" href="/dashboard">Dashboard</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/dashboard/submissions">My Submissions</a>
@@ -23,12 +23,11 @@
             <div class="dropdown mt-3 mt-lg-0">
                 <a href="#" class="btn btn-outline-light dropdown-toggle d-flex align-items-center gap-2"
                     id="profileDropdownFreelance" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="Profile Picture" class="rounded-circle" width="28" height="28">
+                    <img src="<?= htmlspecialchars((string) ($navbarProfileImage ?? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80')) ?>" alt="Profile Picture" class="rounded-circle object-fit-cover flex-shrink-0" width="28" height="28" style="object-fit: cover;">
                     <span><?php echo isset($_SESSION['auth_user_name']) ? htmlspecialchars($_SESSION['auth_user_name']) : 'User'; ?></span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdownFreelance">
                     <li><a class="dropdown-item" href="/profile">My Profile</a></li>
-                    <li><a class="dropdown-item" href="/settings">Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="/signout">Log Out</a></li>
                 </ul>

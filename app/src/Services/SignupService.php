@@ -104,6 +104,11 @@ class SignupService extends Service implements ISignupService
             return;
         }
 
+        if (preg_match('/^[A-Za-z0-9.]+$/', $input['username']) !== 1) {
+            $errors['username'] = 'Username may only contain letters, numbers, and dots (.).';
+            return;
+        }
+
         if ($this->userRepository->usernameExists($input['username'])) {
             $errors['username'] = 'This username is already taken.';
         }
@@ -225,6 +230,11 @@ class SignupService extends Service implements ISignupService
 
         if (!$this->isValidDate($input['dateOfBirth'])) {
             $errors['dateOfBirth'] = 'Please enter a valid date of birth.';
+            return;
+        }
+
+        if (!$this->isAtLeast18YearsOld($input['dateOfBirth'])) {
+            $errors['dateOfBirth'] = 'You must be at least 18 years old to sign up.';
         }
     }
 
@@ -292,18 +302,6 @@ class SignupService extends Service implements ISignupService
     }
 
     /**
-     * Return a standardized failure payload.
-     */
-    private function buildFailureResult(array $errors, array $input): array
-    {
-        return [
-            'success' => false,
-            'errors' => $errors,
-            'input' => $input,
-        ];
-    }
-
-    /**
      * Return a standardized success payload.
      */
     private function buildSuccessResult(int $userId, string $role): array
@@ -323,5 +321,17 @@ class SignupService extends Service implements ISignupService
         $dateTime = date_create_from_format('Y-m-d', $date);
 
         return $dateTime !== false && $dateTime->format('Y-m-d') === $date;
+    }
+
+    /**
+     * Check if the date of birth indicates the person is at least 18 years old.
+     */
+    private function isAtLeast18YearsOld(string $dateOfBirth): bool
+    {
+        $birthDate = date_create_from_format('Y-m-d', $dateOfBirth);
+        $today = new \DateTime('today');
+        $age = $today->diff($birthDate)->y;
+
+        return $age >= 18;
     }
 }

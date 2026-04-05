@@ -43,7 +43,7 @@ class HomeViewModel
 					'url' => '/signup',
 					'label' => 'Start Your Journey',
 				],
-				'searchPlaceholder' => 'Search role, location, or production type',
+				'searchPlaceholder' => 'Search gigs by title',
 				'searchButtonLabel' => 'Search',
 				'stats' => [
 					['label' => 'Active Gigs', 'value' => (string) $activeGigCount, 'note' => 'Open opportunities'],

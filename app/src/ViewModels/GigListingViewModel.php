@@ -28,13 +28,12 @@ class GigListingViewModel
             heroTitle: 'Discover Film Industry Gigs',
             heroDescription: 'Browse the latest gigs and use filters to find opportunities that match your skill set.',
             filters: [
-                'date' => '2026-04-12',
-                'startTime' => '09:00',
-                'location' => 'Randstad, Netherlands',
-                'minimumRate' => 45,
+                'date' => '',
+                'location' => '',
+                'minimumRate' => 20,
             ],
             categoryOptions: GigCategory::filterOptions(),
-            selectedCategories: ['camera', 'production'],
+            selectedCategories: [],
             gigs: [
                 [
                     'title' => 'Documentary Camera Operator',
@@ -102,10 +101,7 @@ class GigListingViewModel
             $gigs
         );
 
-        $selectedCategories = array_values(array_unique(array_map(
-            static fn(Gig $gig): string => GigCategory::tryFrom($gig->getCategory())?->slug() ?? strtolower($gig->getCategory()),
-            $gigs
-        )));
+        $selectedCategories = [];
 
         return new self(
             pageTitle: $default->pageTitle,

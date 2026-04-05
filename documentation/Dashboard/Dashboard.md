@@ -9,14 +9,19 @@ Route authenticated users to the correct dashboard and populate dashboard sectio
 
 ### Methods Used
 - `DashboardController::showDashboard()`
-- `DashboardController::showAdminDashboard()`
+- `DashboardController::showAdminDashboard()` - Routes admin and production house users
 - `DashboardController::showFreelancerDashboard()`
 - `DashboardController::apiDashboard()`
-- `DashboardController::showAdminGigListing()`
-- `DashboardController::showAdminGigPosting()`
-- `DashboardController::showAdminGigEditing()`
-- `DashboardController::showAdminSubmissionReview()`
-- `DashboardController::handleAdminSubmissionReview()`
+- `DashboardController::showProductionHouseGigListing()` - Production house gig management
+- `DashboardController::showProductionHouseGigPosting()` - Production house gig creation
+- `DashboardController::handleProductionHouseGigPosting()`
+- `DashboardController::showProductionHouseGigEditing()` - Production house gig editing
+- `DashboardController::handleProductionHouseGigEditing()`
+- `DashboardController::handleProductionHouseGigDeletion()` - Production house gig deletion
+- `DashboardController::showProductionHouseSubmissions()` - Production house submission review
+- `DashboardController::handleProductionHouseSubmissionReview()`
+- `DashboardController::showFreelancerSubmissions()` - Freelancer applications page
+- `DashboardController::handleFreelancerSubmissionWithdrawal()`
 - `Controller::requireAuthentication()`
 - `Controller::requireRole()`
 - `Controller::authUserRole()`
@@ -59,12 +64,37 @@ Route authenticated users to the correct dashboard and populate dashboard sectio
 ## Flow
 1. The user opens `/dashboard`.
 2. `DashboardController::showDashboard()` checks authentication and routes the user to the correct shell view.
-3. The shell view exposes the `/api/dashboard` endpoint to the browser.
-4. `dashboard.js` fetches the JSON payload from `/api/dashboard`.
-5. `DashboardController::apiDashboard()` builds the live dashboard payload from repositories and services.
-6. `AdminDashboardViewModel::toArray()` or `FreelancerDashboardViewModel::toArray()` serializes the dashboard data.
-7. The browser renders the stats, tables, and activity lists from the API payload.
-8. Role-specific gig management pages are still protected with `Controller::requireRole()`.
-9. The admin submission review page is protected with the admin role check.
-10. If a user is not authenticated, they are redirected to `/signin`.
-11. If a user is authenticated but tries to access the wrong role page, they are redirected to `/dashboard`.
+3. `showAdminDashboard()` is called for admin and production house users; `showFreelancerDashboard()` for freelancers.
+4. The shell view exposes the `/api/dashboard` endpoint to the browser.
+5. `dashboard.js` fetches the JSON payload from `/api/dashboard`.
+6. `DashboardController::apiDashboard()` builds the live dashboard payload from repositories and services.
+7. `AdminDashboardViewModel::toArray()` or `FreelancerDashboardViewModel::toArray()` serializes the dashboard data.
+8. The browser renders the stats, tables, and activity lists from the API payload.
+
+## Production House Dashboard Features
+- **Gig Management**: Create, list, edit, and delete gigs via:
+  - `GET /dashboard/gigs` - List all gigs from this production house
+  - `GET /dashboard/gigs/create` - Create new gig form
+  - `POST /dashboard/gigs/create` - Submit new gig
+  - `GET /dashboard/gigs/{id}/edit` - Edit gig form
+  - `POST /dashboard/gigs/{id}/edit` - Submit gig changes
+  - `POST /dashboard/gigs/{id}/delete` - Delete a gig
+- **Submission Review**: Review freelancer applications for owned gigs
+  - `GET /dashboard/submissions/received` - View all received submissions
+  - `POST /dashboard/submissions/{id}/review` - Accept or reject a submission
+
+## Freelancer Dashboard Features
+- **Submission Tracking**: View status of all gig applications
+  - `GET /dashboard/submissions` - View all submissions
+  - `POST /dashboard/submissions/{id}/withdraw` - Withdraw a pending submission
+
+## Security
+9. Role-specific gig management pages are protected with `Controller::requireRole()`.
+10. The production house submission review page is protected with the production house role check.
+11. If a user is not authenticated, they are redirected to `/signin`.
+12. If a user is authenticated but tries to access the wrong role page, they are redirected to `/dashboard`.
+
+## Related Documentation
+- [Gig Management](../Gig/GigManagement.md) - Production house gig CRUD operations
+- [Production House Submission Review](../Submission/ProductionHouseReview.md) - Review freelancer applications
+- [Freelancer Submissions](../Submission/SubmissionsPage.md) - Track and withdraw applications

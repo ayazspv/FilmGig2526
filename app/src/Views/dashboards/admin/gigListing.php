@@ -6,7 +6,9 @@ $heroTitle = $viewModel->heroTitle;
 $heroDescription = $viewModel->heroDescription;
 $primaryTable = $viewModel->primaryTable;
 $successMessage = $_SESSION['gig_success_message'] ?? null;
+$errorMessage = $_SESSION['gig_error_message'] ?? null;
 unset($_SESSION['gig_success_message']);
+unset($_SESSION['gig_error_message']);
 ?>
 
 <div class="d-flex flex-column min-vh-100" style="background-color: #E5E7EB;">
@@ -31,6 +33,12 @@ unset($_SESSION['gig_success_message']);
             <?php if ($successMessage !== null): ?>
                 <div class="alert alert-success shadow-sm border-0 rounded-4 mb-4">
                     <?= htmlspecialchars($successMessage) ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($errorMessage !== null): ?>
+                <div class="alert alert-danger shadow-sm border-0 rounded-4 mb-4">
+                    <?= htmlspecialchars($errorMessage) ?>
                 </div>
             <?php endif; ?>
 
@@ -72,12 +80,21 @@ unset($_SESSION['gig_success_message']);
                                         </tr>
                                     <?php else: ?>
                                         <?php foreach ($primaryTable['rows'] as $row): ?>
+                                            <?php
+                                                $statusLabel = (string) ($row['status'] ?? 'Unknown');
+                                                $normalizedStatus = strtolower($statusLabel);
+                                                $statusStyle = match ($normalizedStatus) {
+                                                    'active' => 'background-color: #15803D; color: #FFFFFF;',
+                                                    'closed' => 'background-color: #B91C1C; color: #FFFFFF;',
+                                                    default => 'background-color: #6B7280; color: #FFFFFF;',
+                                                };
+                                            ?>
                                             <tr>
                                                 <td><?= htmlspecialchars($row['title']) ?></td>
                                                 <td><?= htmlspecialchars($row['category']) ?></td>
                                                 <td>
-                                                    <span class="badge" style="background-color: #FBBF24; color: #172554;">
-                                                        <?= htmlspecialchars($row['status']) ?>
+                                                    <span class="badge" style="<?= htmlspecialchars($statusStyle) ?>">
+                                                        <?= htmlspecialchars($statusLabel) ?>
                                                     </span>
                                                 </td>
                                                 <td><?= htmlspecialchars((string) $row['value']) ?></td>

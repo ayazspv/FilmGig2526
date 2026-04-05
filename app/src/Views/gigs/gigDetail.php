@@ -4,6 +4,7 @@ $gig = $viewModel->gig;
 $contact = $viewModel->contact;
 $metadata = $viewModel->metadata;
 $currentRole = (string) ($_SESSION['auth_user_role'] ?? '');
+$isGigClosed = strtolower((string) ($gig['status'] ?? '')) === 'closed';
 $hasAlreadyApplied = $hasAlreadyApplied ?? false;
 $submissionSuccessMessage = $submissionSuccessMessage ?? null;
 $submissionErrorMessage = $submissionErrorMessage ?? null;
@@ -59,6 +60,11 @@ $submissionErrorMessage = $submissionErrorMessage ?? null;
                             <?php if (!empty($contact['email'])): ?>
                                 <p class="mb-0"><strong>Email:</strong> <a href="mailto:<?= htmlspecialchars($contact['email']) ?>"><?= htmlspecialchars($contact['email']) ?></a></p>
                             <?php endif; ?>
+                            <?php if (!empty($contact['profileUrl'])): ?>
+                                <div class="mt-3">
+                                    <a href="<?= htmlspecialchars($contact['profileUrl']) ?>" class="btn btn-outline-dark btn-sm">View Production Profile</a>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </section>
@@ -76,19 +82,22 @@ $submissionErrorMessage = $submissionErrorMessage ?? null;
                 </div>
             <?php endif; ?>
 
-            <?php if ($currentRole === 'freelancer'): ?>
-                <footer class="text-center">
-                    <?php if ($hasAlreadyApplied): ?>
-                        <div class="d-flex flex-column align-items-center gap-2">
-                            <button type="button" class="btn btn-lg btn-secondary px-4" disabled>You have already applied for this gig</button>
-                            <a href="/dashboard/submissions" class="btn btn-lg btn-outline-secondary">View My Submissions</a>
-                        </div>
-                    <?php else: ?>
-                        <form method="POST" action="/gigs/<?= htmlspecialchars((string) ($gig['gigId'] ?? 0)) ?>/apply">
-                            <button type="submit" class="btn btn-lg text-white px-4" style="background-color: #B91C1C; border-color: #B91C1C;">Apply for This Gig</button>
-                        </form>
-                    <?php endif; ?>
-                </footer>
+            <?php if (!$isGigClosed): ?>
+                <?php if ($currentRole === ''): ?>
+                    <footer class="text-center">
+                        <a href="/signin" class="btn btn-lg text-white px-4" style="background-color: #B91C1C; border-color: #B91C1C;">Apply Now</a>
+                    </footer>
+                <?php elseif ($currentRole === 'freelancer'): ?>
+                    <footer class="text-center">
+                        <?php if ($hasAlreadyApplied): ?>
+                            <a href="/dashboard/submissions" class="btn btn-lg btn-outline-secondary">Go to Submissions</a>
+                        <?php else: ?>
+                            <form method="POST" action="/gigs/<?= htmlspecialchars((string) ($gig['gigId'] ?? 0)) ?>/apply">
+                                <button type="submit" class="btn btn-lg text-white px-4" style="background-color: #B91C1C; border-color: #B91C1C;">Apply Now</button>
+                            </form>
+                        <?php endif; ?>
+                    </footer>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
     </main>

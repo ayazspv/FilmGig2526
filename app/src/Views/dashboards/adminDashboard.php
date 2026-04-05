@@ -7,7 +7,7 @@ $pageScripts = ['/assets/js/dashboard.js'];
 <div class="d-flex flex-column min-vh-100" style="background-color: #E5E7EB;">
     <?php include __DIR__ . '/../partials/header.php'; ?>
 
-    <main class="flex-grow-1 py-5" data-dashboard-root data-dashboard-api-endpoint="<?= htmlspecialchars($dashboardApiEndpoint) ?>" data-dashboard-kind="<?= htmlspecialchars($dashboardKind) ?>" data-dashboard-user-name="<?= htmlspecialchars((string) ($_SESSION['name'] ?? 'User')) ?>">
+    <main class="flex-grow-1 py-5" data-dashboard-root data-dashboard-api-endpoint="<?= htmlspecialchars($dashboardApiEndpoint) ?>" data-dashboard-kind="<?= htmlspecialchars($dashboardKind) ?>" data-dashboard-user-name="<?= htmlspecialchars((string) ($_SESSION['auth_user_name'] ?? $_SESSION['name'] ?? 'User')) ?>">
         <div class="container">
             <section class="rounded-4 p-4 p-md-5 mb-4 text-white shadow-sm" style="background: linear-gradient(120deg, #172554 0%, #1F2937 100%);">
                 <span class="badge mb-3" style="background-color: #FBBF24; color: #172554;" data-dashboard-badge>Loading dashboard...</span>
@@ -20,14 +20,14 @@ $pageScripts = ['/assets/js/dashboard.js'];
                 </div>
             </section>
 
-            <section class="mb-4">
+            <!-- <section class="mb-4">
                 <div class="row g-3" data-dashboard-stats>
                     <div class="col-12 col-sm-6 col-xl-3"><div class="card border-0 shadow-sm rounded-4 text-center h-100"><div class="card-body"><div class="placeholder-glow"><div class="placeholder col-7 mb-2"></div><div class="placeholder col-5"></div></div></div></div></div>
                     <div class="col-12 col-sm-6 col-xl-3"><div class="card border-0 shadow-sm rounded-4 text-center h-100"><div class="card-body"><div class="placeholder-glow"><div class="placeholder col-7 mb-2"></div><div class="placeholder col-5"></div></div></div></div></div>
                     <div class="col-12 col-sm-6 col-xl-3"><div class="card border-0 shadow-sm rounded-4 text-center h-100"><div class="card-body"><div class="placeholder-glow"><div class="placeholder col-7 mb-2"></div><div class="placeholder col-5"></div></div></div></div></div>
                     <div class="col-12 col-sm-6 col-xl-3"><div class="card border-0 shadow-sm rounded-4 text-center h-100"><div class="card-body"><div class="placeholder-glow"><div class="placeholder col-7 mb-2"></div><div class="placeholder col-5"></div></div></div></div></div>
                 </div>
-            </section>
+            </section> -->
 
             <section class="mb-4">
                 <div class="row g-4">

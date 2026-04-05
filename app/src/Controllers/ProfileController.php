@@ -2,10 +2,10 @@
 
 namespace App\Controllers;
 
-use App\Config;
 use App\Enums\RoleType;
 use App\Framework\Controller;
 use App\Services\Interfaces\IProfileService;
+use App\Config;
 use App\Services\ProfileService;
 use App\ViewModels\AdminProfileViewModel;
 use App\ViewModels\FreelancerProfileViewModel;
@@ -74,6 +74,36 @@ class ProfileController extends Controller
         $viewModel = FreelancerProfileViewModel::createFromData($profileData, $errors, $successMessage);
 
         include __DIR__ . '/../Views/profiles/freelancerProfile.php';
+    }
+
+    /**
+     * Render a read-only public profile page for a production house/admin.
+     */
+    public function showProductionHousePublicProfile(array $params = []): void
+    {
+        $userId = $this->extractPublicProfileUserId($params);
+        $viewData = $this->getProfileService()->getProductionHousePublicProfileData($userId);
+
+        if ($viewData === null) {
+            $this->redirect('/gigs');
+        }
+
+        include __DIR__ . '/../Views/profiles/productionHousePublicProfile.php';
+    }
+
+    /**
+     * Render a read-only public profile page for a freelancer.
+     */
+    public function showFreelancerPublicProfile(array $params = []): void
+    {
+        $userId = $this->extractPublicProfileUserId($params);
+        $viewData = $this->getProfileService()->getFreelancerPublicProfileData($userId);
+
+        if ($viewData === null) {
+            $this->redirect('/gigs');
+        }
+
+        include __DIR__ . '/../Views/profiles/freelancerPublicProfile.php';
     }
 
     /**
@@ -161,11 +191,25 @@ class ProfileController extends Controller
     }
 
     /**
-     * Build profile service.
+     * Build the profile service instance.
      */
     private function getProfileService(): IProfileService
     {
         return new ProfileService(Config::pdo());
+    }
+
+    /**
+     * Extract and validate a public profile user id from route params.
+     */
+    private function extractPublicProfileUserId(array $params): int
+    {
+        $userId = (int) ($params['id'] ?? 0);
+
+        if ($userId <= 0) {
+            $this->redirect('/gigs');
+        }
+
+        return $userId;
     }
 
     /**

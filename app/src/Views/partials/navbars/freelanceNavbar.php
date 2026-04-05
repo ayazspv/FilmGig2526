@@ -11,10 +11,10 @@
         <div class="collapse navbar-collapse" id="navbarNavFreelance">
             <ul class="navbar-nav mx-auto gap-lg-2">
                 <li class="nav-item">
-                    <a class="nav-link" href="/dashboard">Dashboard</a>
+                    <a class="nav-link" href="/gigs">Find Gigs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/gigs">Find Gigs</a>
+                    <a class="nav-link" href="/dashboard">Dashboard</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/dashboard/submissions">My Submissions</a>

@@ -533,11 +533,18 @@ class DashboardController extends Controller
         $freelancer = $freelancerRepository->findById($submission->getFreelancerId());
         $freelancerUser = $freelancer !== null ? $userRepository->findById($freelancer->getUserId()) : null;
 
+        if ($useGigTitleAsSubtitle) {
+            return [
+                'title' => $gig !== null ? $gig->getTitle() : 'Unknown Gig',
+                'subtitle' => 'Status: ' . ucfirst($submission->getStatus()),
+                'meta' => $submission->getSubmittedAt(),
+                'detailUrl' => $gig !== null ? '/gigs/' . $gig->getGigId() : '/gigs',
+            ];
+        }
+
         return [
             'title' => $freelancerUser !== null ? $freelancerUser->getName() : ($gig !== null ? $gig->getTitle() : 'Unknown Submission'),
-            'subtitle' => $useGigTitleAsSubtitle
-                ? (($gig !== null ? $gig->getTitle() : 'Unknown Gig') . ' · ' . ucfirst($submission->getStatus()))
-                : (($gig !== null ? $gig->getTitle() : 'Unknown Gig') . ' · ' . ucfirst($submission->getStatus())),
+            'subtitle' => ($gig !== null ? $gig->getTitle() : 'Unknown Gig') . ' · ' . ucfirst($submission->getStatus()),
             'meta' => $submission->getSubmittedAt(),
             'detailUrl' => $gig !== null ? '/gigs/' . $gig->getGigId() : '/gigs',
         ];

@@ -6,15 +6,23 @@ use App\Config;
 use App\Enums\RoleType;
 use App\Framework\Controller;
 use App\Models\Gig;
-use App\Repositories\GigRepository;
+use App\Services\GigService;
 use App\ViewModels\AdminDashboardViewModel;
 use App\ViewModels\FreelancerDashboardViewModel;
 use App\ViewModels\AdminGigPostingViewModel;
 use App\ViewModels\AdminGigEditingViewModel;
 use App\ViewModels\AdminGigListingViewModel;
-use DateTimeImmutable;
-use Throwable;
 
+/**
+ * DashboardController handles dashboard routes and gig management.
+ * 
+ * Responsibilities:
+ * - Route authentication and role-based authorization
+ * - Display user dashboards by role
+ * - Delegate gig business logic to GigService
+ * - Handle form submissions and redirects
+ * - Render view models with application data
+ */
 class DashboardController extends Controller
 {
     /**
@@ -70,10 +78,11 @@ class DashboardController extends Controller
     {
         $this->requireRole([RoleType::PRODUCTION_HOUSE->value]);
 
-        $gigRepository = new GigRepository(Config::pdo());
-        $ownerId = (int) ($_SESSION['auth_user_id'] ?? 0);
-        $ownerName = (string) ($_SESSION['auth_user_name'] ?? 'Production House');
-        $gigs = $ownerId > 0 ? $gigRepository->findByOwnerId($ownerId) : [];
+        $ownerId = $this->getAuthenticatedOwnerId();
+        $ownerName = $this->getAuthenticatedOwnerName();
+        
+        $service = new GigService(Config::pdo());
+        $gigs = $service->findByOwnerId($ownerId);
 
         $viewModel = AdminGigListingViewModel::createForGigs($gigs, $ownerName);
 
@@ -93,53 +102,19 @@ class DashboardController extends Controller
     }
 
     /**
-     * Handle production house gig posting submissions.
+     * Handle production house gig posting form submissions.
+     * 
+     * Delegates validation, image handling, and persistence to GigService.
      */
     public function handleProductionHouseGigPosting(array $params = []): void
     {
         $this->requireRole([RoleType::PRODUCTION_HOUSE->value]);
 
-        $input = $this->normalizeGigPostingInput($_POST);
-        $errors = $this->validateGigPostingInput($input);
-        $errors = array_merge($errors, $this->validateGigImageUpload($_FILES['image'] ?? [], true));
+        $service = new GigService(Config::pdo());
+        $ownerId = $this->getAuthenticatedOwnerId();
+        $result = $service->create($ownerId, $_POST, $_FILES['image'] ?? []);
 
-        if (!empty($errors)) {
-            $this->renderProductionHouseGigPosting($input, $errors);
-            return;
-        }
-
-        $imageUrl = $this->saveGigImageUpload($_FILES['image'] ?? []);
-
-        if (!empty($errors) || $imageUrl === null) {
-            $this->renderProductionHouseGigPosting($input, $errors ?: ['general' => 'Unable to save the gig picture right now.']);
-            return;
-        }
-
-        try {
-            $gigRepository = new GigRepository(Config::pdo());
-            $gigRepository->create([
-                'ownerId' => (int) ($_SESSION['auth_user_id'] ?? 0),
-                'imageUrl' => $imageUrl,
-                'title' => $input['title'],
-                'description' => $input['description'],
-                'category' => $input['category'],
-                'location' => $input['location'],
-                'startDate' => $input['startDate'],
-                'rateType' => $input['rateType'],
-                'payRate' => $input['payRate'],
-                'status' => $input['status'],
-            ]);
-        } catch (Throwable $exception) {
-            $this->deleteGigImageFile($imageUrl);
-            $this->renderProductionHouseGigPosting($input, [
-                'general' => 'Unable to save this gig right now. Please try again later.',
-            ]);
-            return;
-        }
-
-        $_SESSION['gig_success_message'] = 'Gig published successfully.';
-
-        $this->redirect('/dashboard/gigs');
+        $this->handleGigServiceResult($result, $params, 'post');
     }
 
     /**
@@ -149,16 +124,13 @@ class DashboardController extends Controller
     {
         $this->requireRole([RoleType::PRODUCTION_HOUSE->value]);
 
-        $gigId = (int) ($params['id'] ?? 0);
+        $gigId = $this->extractAndValidateGigId($params);
+        $ownerId = $this->getAuthenticatedOwnerId();
 
-        if ($gigId <= 0) {
-            $this->redirect('/dashboard/gigs');
-        }
+        $service = new GigService(Config::pdo());
+        $gig = $service->findByIdAndVerifyOwnership($gigId, $ownerId);
 
-        $gigRepository = new GigRepository(Config::pdo());
-        $gig = $gigRepository->findById($gigId);
-
-        if ($gig === null || $gig->getOwnerId() !== (int) ($_SESSION['auth_user_id'] ?? 0)) {
+        if ($gig === null) {
             $this->redirect('/dashboard/gigs');
         }
 
@@ -168,106 +140,45 @@ class DashboardController extends Controller
     }
 
     /**
-     * Handle production house gig editing submissions.
+     * Handle production house gig editing form submissions.
+     * 
+     * Delegates validation, image handling, and persistence to GigService.
      */
     public function handleProductionHouseGigEditing(array $params = []): void
     {
         $this->requireRole([RoleType::PRODUCTION_HOUSE->value]);
 
-        $gigId = (int) ($params['id'] ?? 0);
+        $gigId = $this->extractAndValidateGigId($params);
+        $ownerId = $this->getAuthenticatedOwnerId();
 
-        if ($gigId <= 0) {
+        $service = new GigService(Config::pdo());
+        $existingGig = $service->findByIdAndVerifyOwnership($gigId, $ownerId);
+
+        if ($existingGig === null) {
             $this->redirect('/dashboard/gigs');
         }
 
-        $gigRepository = new GigRepository(Config::pdo());
-        $existingGig = $gigRepository->findById($gigId);
+        $result = $service->update($gigId, $ownerId, $_POST, $_FILES['image'] ?? [], $existingGig->getImageUrl());
 
-        if ($existingGig === null || $existingGig->getOwnerId() !== (int) ($_SESSION['auth_user_id'] ?? 0)) {
-            $this->redirect('/dashboard/gigs');
-        }
-
-        $input = $this->normalizeGigPostingInput($_POST);
-        $errors = $this->validateGigPostingInput($input);
-        $errors = array_merge($errors, $this->validateGigImageUpload($_FILES['image'] ?? [], false));
-
-        if (!empty($errors)) {
-            $this->renderProductionHouseGigEditing($existingGig, $input, $errors);
-            return;
-        }
-
-        $previousImageUrl = $existingGig->getImageUrl();
-        $imageUrl = $this->saveGigImageUpload($_FILES['image'] ?? [], $previousImageUrl);
-
-        if (!empty($errors) || $imageUrl === null) {
-            $this->renderProductionHouseGigEditing($existingGig, $input, $errors ?: ['general' => 'Unable to save the gig picture right now.']);
-            return;
-        }
-
-        try {
-            $gigRepository->update($gigId, [
-                'ownerId' => (int) ($_SESSION['auth_user_id'] ?? 0),
-                'imageUrl' => $imageUrl,
-                'title' => $input['title'],
-                'description' => $input['description'],
-                'category' => $input['category'],
-                'location' => $input['location'],
-                'startDate' => $input['startDate'],
-                'rateType' => $input['rateType'],
-                'payRate' => $input['payRate'],
-                'status' => $input['status'],
-            ]);
-        } catch (Throwable $exception) {
-            if ($imageUrl !== $previousImageUrl) {
-                $this->deleteGigImageFile($imageUrl);
-            }
-
-            $this->renderProductionHouseGigEditing($existingGig, $input, [
-                'general' => 'Unable to update this gig right now. Please try again later.',
-            ]);
-            return;
-        }
-
-        if ($imageUrl !== $previousImageUrl) {
-            $this->deleteGigImageFile($previousImageUrl);
-        }
-
-        $_SESSION['gig_success_message'] = 'Gig updated successfully.';
-
-        $this->redirect('/dashboard/gigs');
+        $this->handleGigServiceResultWithGig($result, $existingGig, 'edit');
     }
 
     /**
-     * Handle production house gig deletion submissions.
+     * Handle production house gig deletion requests.
+     * 
+     * Delegates ownership verification, deletion, and cleanup to GigService.
      */
     public function handleProductionHouseGigDeletion(array $params = []): void
     {
         $this->requireRole([RoleType::PRODUCTION_HOUSE->value]);
 
-        $gigId = (int) ($params['id'] ?? 0);
+        $gigId = $this->extractAndValidateGigId($params);
+        $ownerId = $this->getAuthenticatedOwnerId();
 
-        if ($gigId <= 0) {
-            $this->redirect('/dashboard/gigs');
-        }
+        $service = new GigService(Config::pdo());
+        $service->delete($gigId, $ownerId);
 
-        $gigRepository = new GigRepository(Config::pdo());
-        $existingGig = $gigRepository->findById($gigId);
-
-        if ($existingGig === null || $existingGig->getOwnerId() !== (int) ($_SESSION['auth_user_id'] ?? 0)) {
-            $this->redirect('/dashboard/gigs');
-        }
-
-        try {
-            $gigRepository->delete($gigId);
-        } catch (Throwable $exception) {
-            $this->redirect('/dashboard/gigs');
-        }
-
-        $this->deleteGigImageFile($existingGig->getImageUrl());
-
-        $_SESSION['gig_success_message'] = 'Gig deleted successfully.';
-
-        $this->redirect('/dashboard/gigs');
+        $this->redirectToGigListingWithSuccess('Gig deleted successfully.');
     }
 
     /**
@@ -281,6 +192,9 @@ class DashboardController extends Controller
 
     /**
      * Render the production house gig posting form with old input and errors.
+     * 
+     * This is a helper for displaying the gig posting form with validation errors
+     * and previously entered data for user correction.
      */
     private function renderProductionHouseGigPosting(array $oldInput = [], array $errors = []): void
     {
@@ -291,6 +205,9 @@ class DashboardController extends Controller
 
     /**
      * Render the production house gig editing form with existing gig data.
+     * 
+     * This is a helper for displaying the gig editing form with current gig data,
+     * validation errors, and the current image for user modification.
      */
     private function renderProductionHouseGigEditing(Gig $gig, array $oldInput = [], array $errors = []): void
     {
@@ -300,198 +217,104 @@ class DashboardController extends Controller
     }
 
     /**
-     * Normalize gig posting input before validation and persistence.
+     * Extract the authenticated owner ID from session.
+     * 
+     * @return int The owner ID
      */
-    private function normalizeGigPostingInput(array $input): array
+    private function getAuthenticatedOwnerId(): int
     {
-        return [
-            'title' => trim((string) ($input['title'] ?? '')),
-            'description' => trim((string) ($input['description'] ?? '')),
-            'category' => trim((string) ($input['category'] ?? '')),
-            'location' => trim((string) ($input['location'] ?? '')),
-            'startDate' => trim((string) ($input['startDate'] ?? '')),
-            'rateType' => strtolower(trim((string) ($input['rateType'] ?? ''))),
-            'payRate' => trim((string) ($input['payRate'] ?? '')),
-            'status' => strtolower(trim((string) ($input['status'] ?? ''))),
-        ];
+        return (int) ($_SESSION['auth_user_id'] ?? 0);
     }
 
     /**
-     * Validate gig posting input.
+     * Extract the authenticated owner name from session.
+     * 
+     * @return string The owner name
      */
-    private function validateGigPostingInput(array $input): array
+    private function getAuthenticatedOwnerName(): string
     {
-        $errors = [];
-
-        if ($input['title'] === '') {
-            $errors['title'] = 'Gig title is required.';
-        }
-
-        if ($input['description'] === '') {
-            $errors['description'] = 'Description is required.';
-        }
-
-        if (!in_array($input['category'], ['Camera', 'Editing', 'Sound', 'Production', 'Animation'], true)) {
-            $errors['category'] = 'Please choose a valid category.';
-        }
-
-        if ($input['location'] === '') {
-            $errors['location'] = 'Location is required.';
-        }
-
-        if (!$this->isValidDate($input['startDate'])) {
-            $errors['startDate'] = 'Start date must be a valid date in YYYY-MM-DD format.';
-        }
-
-        if (!in_array($input['rateType'], ['hourly', 'fixed'], true)) {
-            $errors['rateType'] = 'Please choose a valid rate type.';
-        }
-
-        if (!is_numeric($input['payRate']) || (float) $input['payRate'] <= 0) {
-            $errors['payRate'] = 'Pay rate must be a positive number.';
-        }
-
-        if (!in_array($input['status'], ['active', 'closed'], true)) {
-            $errors['status'] = 'Please choose a valid gig status.';
-        }
-
-        return $errors;
+        return (string) ($_SESSION['auth_user_name'] ?? 'Production House');
     }
 
     /**
-     * Validate an uploaded gig image before saving.
+     * Extract and validate the gig ID from route parameters.
+     * 
+     * Redirects to gig listing if the ID is invalid or missing.
+     * 
+     * @param array $params Route parameters
+     * @return int The validated gig ID
      */
-    private function validateGigImageUpload(array $file, bool $required): array
+    private function extractAndValidateGigId(array $params): int
     {
-        $errors = [];
+        $gigId = (int) ($params['id'] ?? 0);
 
-        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
-            if ($required) {
-                $errors['image'] = 'Gig picture is required.';
-            }
-
-            return $errors;
+        if ($gigId <= 0) {
+            $this->redirect('/dashboard/gigs');
         }
 
-        if (($file['error'] ?? UPLOAD_ERR_OK) === UPLOAD_ERR_INI_SIZE || ($file['error'] ?? UPLOAD_ERR_OK) === UPLOAD_ERR_FORM_SIZE) {
-            $errors['image'] = 'Gig picture must be smaller than 5 MB.';
-
-            return $errors;
-        }
-
-        if (($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
-            $errors['image'] = 'The gig picture could not be uploaded.';
-
-            return $errors;
-        }
-
-        if (($file['size'] ?? 0) > 5 * 1024 * 1024) {
-            $errors['image'] = 'Gig picture must be smaller than 5 MB.';
-
-            return $errors;
-        }
-
-        $imageInfo = @getimagesize((string) ($file['tmp_name'] ?? ''));
-
-        if ($imageInfo === false) {
-            $errors['image'] = 'Gig picture must be a valid image file.';
-            return $errors;
-        }
-
-        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $mimeType = (string) ($imageInfo['mime'] ?? '');
-
-        if (!in_array($mimeType, $allowedMimeTypes, true)) {
-            $errors['image'] = 'Gig picture must be JPG, PNG, GIF, or WEBP.';
-        }
-
-        return $errors;
+        return $gigId;
     }
 
     /**
-     * Save an uploaded gig image into the public images directory.
+     * Handle gig service result for create/post operations.
+     * 
+     * On failure, re-renders the form with errors and old input.
+     * On success, redirects to gig listing with success message.
+     * 
+     * @param array $result Service result array
+     * @param array $params Route parameters (unused, for compatibility)
+     * @param string $action The action type ('post' for create)
+     * @return void
      */
-    private function saveGigImageUpload(array $file, ?string $fallbackImageUrl = null): ?string
+    private function handleGigServiceResult(array $result, array $params = [], string $action = 'post'): void
     {
-        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
-            return $fallbackImageUrl;
-        }
-
-        $validationErrors = $this->validateGigImageUpload($file, false);
-
-        if (!empty($validationErrors)) {
-            return $fallbackImageUrl;
-        }
-
-        $imageInfo = getimagesize((string) $file['tmp_name']);
-        $extension = $this->imageMimeTypeToExtension((string) ($imageInfo['mime'] ?? ''));
-
-        if ($extension === null) {
-            return $fallbackImageUrl;
-        }
-
-        $directory = __DIR__ . '/../../public/assets/images';
-
-        if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
-            return $fallbackImageUrl;
-        }
-
-        $fileName = sprintf('gig-upload-%s.%s', bin2hex(random_bytes(8)), $extension);
-        $targetPath = $directory . '/' . $fileName;
-
-        if (!move_uploaded_file((string) $file['tmp_name'], $targetPath)) {
-            return $fallbackImageUrl;
-        }
-
-        return '/assets/images/' . $fileName;
-    }
-
-    /**
-     * Delete a gig image file from the public images directory.
-     */
-    private function deleteGigImageFile(?string $imageUrl): void
-    {
-        if ($imageUrl === null || $imageUrl === '') {
+        if (($result['success'] ?? false) !== true) {
+            $this->renderProductionHouseGigPosting(
+                $result['input'] ?? [],
+                $result['errors'] ?? ['general' => 'Unable to process gig.']
+            );
             return;
         }
 
-        if (!str_starts_with($imageUrl, '/assets/images/')) {
+        $message = $action === 'post' ? 'Gig published successfully.' : 'Gig updated successfully.';
+        $this->redirectToGigListingWithSuccess($message);
+    }
+
+    /**
+     * Handle gig service result for update/edit operations.
+     * 
+     * On failure, re-renders the form with errors and old input along with existing gig.
+     * On success, redirects to gig listing with success message.
+     * 
+     * @param array $result Service result array
+     * @param Gig $gig The existing gig (for re-rendering on failure)
+     * @param string $action The action type ('edit' for update)
+     * @return void
+     */
+    private function handleGigServiceResultWithGig(array $result, Gig $gig, string $action = 'edit'): void
+    {
+        if (($result['success'] ?? false) !== true) {
+            $this->renderProductionHouseGigEditing(
+                $gig,
+                $result['input'] ?? [],
+                $result['errors'] ?? ['general' => 'Unable to process gig.']
+            );
             return;
         }
 
-        $imagePath = __DIR__ . '/../../public' . $imageUrl;
-
-        if (is_file($imagePath)) {
-            @unlink($imagePath);
-        }
+        $message = $action === 'edit' ? 'Gig updated successfully.' : 'Gig changed successfully.';
+        $this->redirectToGigListingWithSuccess($message);
     }
 
     /**
-     * Map an image MIME type to a file extension.
+     * Redirect to gig listing with a success message stored in session.
+     * 
+     * @param string $message The success message to display
+     * @return void
      */
-    private function imageMimeTypeToExtension(string $mimeType): ?string
+    private function redirectToGigListingWithSuccess(string $message): void
     {
-        return match ($mimeType) {
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            'image/gif' => 'gif',
-            'image/webp' => 'webp',
-            default => null,
-        };
+        $_SESSION['gig_success_message'] = $message;
+        $this->redirect('/dashboard/gigs');
     }
-
-    /**
-     * Check whether a date string uses the expected database format.
-     */
-    private function isValidDate(string $value): bool
-    {
-        if ($value === '') {
-            return false;
-        }
-
-        $date = DateTimeImmutable::createFromFormat('Y-m-d', $value);
-
-        return $date !== false && $date->format('Y-m-d') === $value;
-    }
-
 }

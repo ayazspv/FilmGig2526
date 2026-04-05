@@ -13,5 +13,6 @@ This folder contains feature-by-feature documentation for the main application f
 - [Home](Home/Home.md)
 - [Dashboard](Dashboard/Dashboard.md)
 - [Gig](Gig/Gig.md)
+- [Submission](Submission/Submission.md)
 - [Profile](Profile/Profile.md)
 - [Settings](Settings/Settings.md)

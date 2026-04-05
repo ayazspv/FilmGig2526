@@ -30,6 +30,7 @@ The FilmGig2526 application has two distinct gig-related areas:
 - ✅ Database and filesystem transaction safety
 - ✅ Service layer abstraction for business logic
 - ✅ Role-based access control
+- ✅ Freelancer application and submission tracking
 
 ## Public Gig Browsing
 
@@ -67,3 +68,7 @@ Show public gig listings and detailed gig information to all users. Freelancers 
 - Public access (no authentication required)
 - Viewing: All users
 - Applying for gigs: Freelancers only (CTA hidden for other roles)
+
+### Related Submission Docs
+- [Submission.md](../Submission/Submission.md) - Application, status tracking, and withdrawal flow
+- [SubmissionsPage.md](../Submission/SubmissionsPage.md) - Freelancer submissions page and withdraw action

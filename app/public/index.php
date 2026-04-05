@@ -48,6 +48,7 @@ $router->addRoute('POST', '/dashboard/submissions/{id}/review', ['App\Controller
 
 $router->addRoute('GET', '/profile', ['App\Controllers\ProfileController', 'showProfile']);
 $router->addRoute('GET', '/profiles/production-house/{id}', ['App\Controllers\ProfileController', 'showProductionHousePublicProfile']);
+$router->addRoute('GET', '/profiles/freelancer/{id}', ['App\Controllers\ProfileController', 'showFreelancerPublicProfile']);
 $router->addRoute('POST', '/profile', ['App\Controllers\ProfileController', 'handleProfileUpdate']);
 $router->addRoute('GET', '/settings', ['App\Controllers\SettingsController', 'showSettings']);
 

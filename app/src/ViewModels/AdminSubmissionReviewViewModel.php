@@ -65,6 +65,7 @@ class AdminSubmissionReviewViewModel
                 'gigStatusLabel' => $submission['gigStatusLabel'],
                 'freelancerName' => $submission['freelancerName'],
                 'freelancerEmail' => $submission['freelancerEmail'],
+                'freelancerProfileUrl' => $submission['freelancerProfileUrl'] ?? '',
                 'status' => $submission['status'],
                 'statusLabel' => $submission['statusLabel'],
                 'submittedAt' => $submission['submittedAt'],

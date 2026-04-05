@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Config;
 use App\Enums\RoleType;
 use App\Framework\Controller;
+use App\Repositories\FreelancerRepository;
 use App\Repositories\ProductionHouseRepository;
 use App\Repositories\UserRepository;
 use App\Services\Interfaces\IProfileService;
@@ -112,6 +113,41 @@ class ProfileController extends Controller
         ];
 
         include __DIR__ . '/../Views/profiles/productionHousePublicProfile.php';
+    }
+
+    /**
+     * Render a read-only public profile page for a freelancer.
+     */
+    public function showFreelancerPublicProfile(array $params = []): void
+    {
+        $userId = (int) ($params['id'] ?? 0);
+
+        if ($userId <= 0) {
+            $this->redirect('/gigs');
+        }
+
+        $userRepository = new UserRepository(Config::pdo());
+        $freelancerRepository = new FreelancerRepository(Config::pdo());
+
+        $user = $userRepository->findById($userId);
+
+        if ($user === null || (string) $user->getRole() !== RoleType::FREELANCER->value) {
+            $this->redirect('/gigs');
+        }
+
+        $freelancer = $freelancerRepository->findByUserId($userId);
+
+        $viewData = [
+            'pageTitle' => trim($user->getName() . ' - Freelancer Profile - FilmGig'),
+            'profileImage' => $this->resolvePublicProfileImageUrl($userId, RoleType::FREELANCER->value),
+            'fullName' => $user->getName(),
+            'email' => $user->getEmail(),
+            'address' => $user->getAddress(),
+            'dateOfBirth' => $freelancer?->getDateOfBirth() ?? '',
+            'bio' => $user->getBio(),
+        ];
+
+        include __DIR__ . '/../Views/profiles/freelancerPublicProfile.php';
     }
 
     /**
@@ -231,13 +267,17 @@ class ProfileController extends Controller
     /**
      * Resolve a profile image URL for public profile pages.
      */
-    private function resolvePublicProfileImageUrl(int $userId): string
+    private function resolvePublicProfileImageUrl(int $userId, string $role = RoleType::PRODUCTION_HOUSE->value): string
     {
         $pattern = __DIR__ . '/../../public/assets/images/profile-user-' . $userId . '.*';
         $matches = glob($pattern) ?: [];
 
         if (!empty($matches)) {
             return '/assets/images/' . basename($matches[0]);
+        }
+
+        if ($role === RoleType::FREELANCER->value) {
+            return 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=220&q=80';
         }
 
         return 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=220&q=80';

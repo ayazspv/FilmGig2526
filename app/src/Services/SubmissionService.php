@@ -514,6 +514,7 @@ class SubmissionService extends Service implements ISubmissionService
             'gigStatusLabel' => $gig !== null ? ucfirst($gig->getStatus()) : 'Unknown',
             'freelancerName' => $freelancerUser !== null ? $freelancerUser->getName() : 'Unknown Freelancer',
             'freelancerEmail' => $freelancerUser !== null ? $freelancerUser->getEmail() : '',
+            'freelancerProfileUrl' => $freelancerUser !== null ? '/profiles/freelancer/' . $freelancerUser->getUserId() : '',
             'status' => $submission->getStatus(),
             'statusLabel' => ucfirst($submission->getStatus()),
             'submittedAt' => $submission->getSubmittedAt(),

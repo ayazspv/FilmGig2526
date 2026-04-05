@@ -10,32 +10,33 @@ class AdminProfileViewModel
         public readonly string $heroTitle,
         public readonly string $heroDescription,
         public readonly string $profileImage,
-        public readonly array $summary,
-        public readonly array $contact,
-        public readonly string $about,
+        public readonly array $form,
+        public readonly array $errors,
+        public readonly ?string $successMessage,
     ) {
     }
 
-    public static function createDefault(): self
+    public static function createFromData(array $profileData, array $errors = [], ?string $successMessage = null): self
     {
+        $form = $profileData['form'] ?? [];
+
         return new self(
             pageTitle: 'Admin Profile - FilmGig',
             badgeLabel: 'Company Profile',
-            heroTitle: 'FilmGig Studios BV',
-            heroDescription: 'Company profile and core contact information.',
-            profileImage: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=220&q=80',
-            summary: [
-                'name' => 'FilmGig Studios BV',
-                'username' => 'filmgig_admin',
-                'market' => 'Film Production Marketplace',
+            heroTitle: (string) ($form['companyName'] ?? 'Company Profile'),
+            heroDescription: 'Update your company details, contact information, and profile picture.',
+            profileImage: (string) ($profileData['profileImage'] ?? ''),
+            form: [
+                'username' => (string) ($form['username'] ?? ''),
+                'companyName' => (string) ($form['companyName'] ?? ''),
+                'contactName' => (string) ($form['contactName'] ?? ''),
+                'email' => (string) ($form['email'] ?? ''),
+                'address' => (string) ($form['address'] ?? ''),
+                'website' => (string) ($form['website'] ?? ''),
+                'bio' => (string) ($form['bio'] ?? ''),
             ],
-            contact: [
-                'contactPerson' => 'Alex de Vries',
-                'email' => 'admin@filmgig.nl',
-                'phone' => '+31 10 123 4567',
-                'address' => 'Rotterdam Media Park, NL',
-            ],
-            about: 'FilmGig Studios helps productions and freelancers connect faster through a niche-focused hiring platform for the film industry.',
+            errors: $errors,
+            successMessage: $successMessage,
         );
     }
 }

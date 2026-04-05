@@ -143,6 +143,7 @@ const renderHomeGigs = (gigs) => {
 
 	const items = Array.isArray(gigs.items) ? gigs.items : [];
 	const subtitle = escapeHtml(gigs.subtitle ?? 'Browse the latest gigs from the database.');
+	const latestItems = items.slice(0, 3);
 
 	section.innerHTML = `
 		<div class="container">
@@ -151,20 +152,20 @@ const renderHomeGigs = (gigs) => {
 					<h2 class="fw-bold mb-2" style="color: #172554;">${escapeHtml(gigs.title ?? 'Available Gigs')}</h2>
 					<p class="mb-0" style="color: #1F2937;">${subtitle}</p>
 				</div>
-				<div class="d-flex align-items-center gap-2">
+				<div>
 					<span class="badge" style="background-color: #172554;">Newest opportunities</span>
 				</div>
 			</div>
 
-			${items.length === 0 ? `
+			${latestItems.length === 0 ? `
 				<div class="card border-0 shadow-sm rounded-4">
 					<div class="card-body text-center py-5">
 						<p class="text-muted mb-0">No gigs available right now.</p>
 					</div>
 				</div>
 			` : `
-				<div class="row g-4">
-					${items.map((item) => `
+				<div class="row g-4 mb-5">
+					${latestItems.map((item) => `
 						<div class="col-12 col-md-6 col-lg-4 d-flex">
 							<article class="card border-0 shadow-sm rounded-4 w-100 overflow-hidden">
 								<img src="${escapeHtml(item.thumbnail ?? item.imageUrl ?? 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=900&q=80')}" class="card-img-top gigs-thumbnail" alt="${escapeHtml(item.title ?? 'Gig Thumbnail')}">
@@ -179,6 +180,10 @@ const renderHomeGigs = (gigs) => {
 							</article>
 						</div>
 					`).join('')}
+				</div>
+
+				<div class="text-center">
+					<a href="/gigs" class="btn btn-lg text-white fw-bold" style="background-color: #B91C1C; border-color: #B91C1C;">All the gigs</a>
 				</div>
 			`}
 		</div>

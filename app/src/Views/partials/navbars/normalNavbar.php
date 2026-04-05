@@ -11,17 +11,17 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav mx-auto gap-lg-2">
                 <li class="nav-item">
-                    <a class="nav-link" href="#how-it-works">How It Works</a>
+                    <a class="nav-link" href="/#how-it-works">How It Works</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#available-gigs">Find Gigs</a>
+                    <a class="nav-link" href="gigs">Find Gigs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#why-filmgig">Why FilmGig</a>
+                    <a class="nav-link" href="/#why-filmgig">Why FilmGig</a>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link" href="#">About</a>
-                </li>
+                </li> -->
             </ul>
             <div class="d-flex gap-2 mt-3 mt-lg-0">
                 <a class="btn btn-outline-light" href="signin">Sign In</a>

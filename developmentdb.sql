@@ -93,7 +93,15 @@ INSERT INTO `freelancer` (`freelancerId`, `userId`, `dateOfBirth`, `createdAt`) 
 
 INSERT INTO `gig` (`gigId`, `ownerId`, `imageUrl`, `title`, `description`, `category`, `location`, `startDate`, `rateType`, `payRate`, `status`, `createdAt`) VALUES
 (1, 1, '/assets/images/thumbnail1.svg', 'Documentary Camera Operator', 'Capture interviews and b-roll footage for a 3-day documentary production.', 'Camera', 'Amsterdam, Netherlands', '2026-04-12', 'hourly', 55.00, 'active', '2026-04-05 09:15:00'),
-(2, 1, '/assets/images/thumbnail2.svg', 'Commercial Video Editor', 'Edit a set of social-first ad videos with a fast turnaround.', 'Editing', 'The Hague, Netherlands', '2026-04-14', 'hourly', 60.00, 'active', '2026-04-05 09:20:00');
+(2, 1, '/assets/images/thumbnail2.svg', 'Commercial Video Editor', 'Edit a set of social-first ad videos with a fast turnaround.', 'Editing', 'The Hague, Netherlands', '2026-04-14', 'hourly', 60.00, 'active', '2026-04-05 09:20:00'),
+(3, 1, '/assets/images/thumbnail1.svg', 'Sound Designer', 'Create immersive sound design for indie short film.', 'Audio', 'Rotterdam, Netherlands', '2026-04-15', 'fixed', 800.00, 'active', '2026-04-05 09:25:00'),
+(4, 1, '/assets/images/thumbnail2.svg', 'Boom Operator', 'Professional boom operation for TV commercial shoot (2 days).', 'Audio', 'Amsterdam, Netherlands', '2026-04-18', 'hourly', 45.00, 'active', '2026-04-05 09:30:00'),
+(5, 1, '/assets/images/thumbnail1.svg', 'Color Grader', 'Grade and color correct 15-minute music video.', 'Editing', 'Utrecht, Netherlands', '2026-04-20', 'fixed', 1200.00, 'active', '2026-04-05 09:35:00'),
+(6, 1, '/assets/images/thumbnail2.svg', 'Production Assistant', 'General PA work on feature film set (5 days).', 'Production', 'Amsterdam, Netherlands', '2026-04-16', 'hourly', 25.00, 'active', '2026-04-05 09:40:00'),
+(7, 1, '/assets/images/thumbnail1.svg', 'Gaffer', 'Lighting technician for corporate video shoot.', 'Camera', 'The Hague, Netherlands', '2026-04-17', 'hourly', 65.00, 'active', '2026-04-05 09:45:00'),
+(8, 1, '/assets/images/thumbnail2.svg', 'Visual Effects Artist', 'Create VFX for 30-second promotional video.', 'Editing', 'Rotterdam, Netherlands', '2026-04-22', 'fixed', 1500.00, 'active', '2026-04-05 09:50:00'),
+(9, 1, '/assets/images/thumbnail1.svg', 'Set Designer', 'Design and build sets for short film production.', 'Production', 'Eindhoven, Netherlands', '2026-04-19', 'fixed', 950.00, 'active', '2026-04-05 09:55:00'),
+(10, 1, '/assets/images/thumbnail2.svg', 'Motion Graphics Lead', 'Lead motion graphics for animated documentary series.', 'Editing', 'Amsterdam, Netherlands', '2026-04-25', 'fixed', 2000.00, 'active', '2026-04-05 10:00:00');
 
 INSERT INTO `submission` (`submissionId`, `gigId`, `freelancerId`, `status`, `submittedAt`) VALUES
 (1, 1, 1, 'pending', '2026-04-05 09:30:00'),

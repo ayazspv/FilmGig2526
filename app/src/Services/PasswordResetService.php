@@ -2,40 +2,44 @@
 
 namespace App\Services;
 
+use App\Framework\Service;
 use App\Repositories\UserRepository;
+use App\Services\Interfaces\IPasswordResetService;
 use PDO;
 use Throwable;
 
-class PasswordResetService
+class PasswordResetService extends Service implements IPasswordResetService
 {
     private UserRepository $userRepository;
 
+    /**
+     * Build the password reset service with its user repository.
+     */
     public function __construct(PDO $pdo)
     {
+        parent::__construct($pdo);
         $this->userRepository = new UserRepository($pdo);
     }
 
+    /**
+     * Verify username, email, and KVK before allowing a reset.
+     */
     public function verifyIdentity(array $input): array
     {
         $normalizedInput = $this->normalizeIdentityInput($input);
         $errors = $this->validateIdentityInput($normalizedInput);
 
         if ($errors !== []) {
-            return [
-                'success' => false,
-                'errors' => $errors,
-                'input' => $normalizedInput,
-            ];
+            return $this->buildFailureResult($errors, $normalizedInput);
         }
 
-        try {
-            $user = $this->userRepository->findByUsername($normalizedInput['username']);
-        } catch (Throwable $exception) {
-            return [
-                'success' => false,
-                'errors' => ['general' => 'Unable to verify your account right now. Please try again later.'],
-                'input' => $normalizedInput,
-            ];
+        $user = $this->findUserByUsername($normalizedInput['username']);
+
+        if ($user === null) {
+            return $this->buildFailureResult(
+                ['general' => 'Unable to verify your account right now. Please try again later.'],
+                $normalizedInput
+            );
         }
 
         if (
@@ -43,54 +47,42 @@ class PasswordResetService
             || strtolower($user->getEmail()) !== $normalizedInput['email']
             || (string) $user->getKvkNr() !== $normalizedInput['kvkNr']
         ) {
-            return [
-                'success' => false,
-                'errors' => ['general' => 'The username, email, and Chamber of Commerce number combination does not match any account.'],
-                'input' => $normalizedInput,
-            ];
+            return $this->buildFailureResult(
+                ['general' => 'The username, email, and Chamber of Commerce number combination does not match any account.'],
+                $normalizedInput
+            );
         }
 
-        return [
-            'success' => true,
-            'userId' => $user->getUserId(),
-            'username' => $user->getUsername(),
-            'input' => $normalizedInput,
-        ];
+        return $this->buildVerifySuccessResult($user->getUserId(), $user->getUsername(), $normalizedInput);
     }
 
+    /**
+     * Update the password for a verified user.
+     */
     public function resetPassword(int $userId, array $input): array
     {
         $normalizedInput = $this->normalizePasswordInput($input);
         $errors = $this->validatePasswordInput($normalizedInput);
 
         if ($errors !== []) {
-            return [
-                'success' => false,
-                'errors' => $errors,
-                'input' => $normalizedInput,
-            ];
+            return $this->buildFailureResult($errors, $normalizedInput);
         }
 
-        try {
-            $updated = $this->userRepository->updatePassword(
-                $userId,
-                password_hash($normalizedInput['password'], PASSWORD_DEFAULT)
-            );
-        } catch (Throwable $exception) {
-            $updated = false;
-        }
+        $updated = $this->updatePassword($userId, $normalizedInput['password']);
 
         if (!$updated) {
-            return [
-                'success' => false,
-                'errors' => ['general' => 'Unable to reset password right now. Please try again later.'],
-                'input' => $normalizedInput,
-            ];
+            return $this->buildFailureResult(
+                ['general' => 'Unable to reset password right now. Please try again later.'],
+                $normalizedInput
+            );
         }
 
         return ['success' => true];
     }
 
+    /**
+     * Normalize the identity verification input.
+     */
     private function normalizeIdentityInput(array $input): array
     {
         return [
@@ -100,6 +92,9 @@ class PasswordResetService
         ];
     }
 
+    /**
+     * Normalize the new password input.
+     */
     private function normalizePasswordInput(array $input): array
     {
         return [
@@ -108,6 +103,9 @@ class PasswordResetService
         ];
     }
 
+    /**
+     * Validate the identity verification fields.
+     */
     private function validateIdentityInput(array $input): array
     {
         $errors = [];
@@ -131,6 +129,9 @@ class PasswordResetService
         return $errors;
     }
 
+    /**
+     * Validate the new password fields.
+     */
     private function validatePasswordInput(array $input): array
     {
         $errors = [];
@@ -148,5 +149,57 @@ class PasswordResetService
         }
 
         return $errors;
+    }
+
+    /**
+     * Return a standardized failure payload.
+     */
+    private function buildFailureResult(array $errors, array $input): array
+    {
+        return [
+            'success' => false,
+            'errors' => $errors,
+            'input' => $input,
+        ];
+    }
+
+    /**
+     * Return a standardized success payload for identity verification.
+     */
+    private function buildVerifySuccessResult(int $userId, string $username, array $input): array
+    {
+        return [
+            'success' => true,
+            'userId' => $userId,
+            'username' => $username,
+            'input' => $input,
+        ];
+    }
+
+    /**
+     * Look up a user by username and suppress repository exceptions.
+     */
+    private function findUserByUsername(string $username)
+    {
+        try {
+            return $this->userRepository->findByUsername($username);
+        } catch (Throwable $exception) {
+            return null;
+        }
+    }
+
+    /**
+     * Update the stored password hash for a user.
+     */
+    private function updatePassword(int $userId, string $password): bool
+    {
+        try {
+            return $this->userRepository->updatePassword(
+                $userId,
+                password_hash($password, PASSWORD_DEFAULT)
+            );
+        } catch (Throwable $exception) {
+            return false;
+        }
     }
 }

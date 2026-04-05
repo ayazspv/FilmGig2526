@@ -29,6 +29,7 @@ $router->addRoute('POST', '/forget-password', ['App\Controllers\AuthController',
 
 // Dashboard routes
 $router->addRoute('GET', '/dashboard', ['App\Controllers\DashboardController', 'showDashboard']);
+$router->addRoute('GET', '/api/dashboard', ['App\Controllers\DashboardController', 'apiDashboard']);
 
 $router->addRoute('GET', '/dashboard/gigs', ['App\Controllers\DashboardController', 'showProductionHouseGigListing']);
 $router->addRoute('GET', '/dashboard/gigs/new', ['App\Controllers\DashboardController', 'showProductionHouseGigPosting']);

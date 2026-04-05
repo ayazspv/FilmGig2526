@@ -4,8 +4,15 @@ namespace App\Controllers;
 
 use App\Config;
 use App\Enums\RoleType;
+use App\Enums\SubmissionStatus;
 use App\Framework\Controller;
 use App\Models\Gig;
+use App\Models\Submission;
+use App\Repositories\FreelancerRepository;
+use App\Repositories\GigRepository;
+use App\Repositories\ProductionHouseRepository;
+use App\Repositories\SubmissionRepository;
+use App\Repositories\UserRepository;
 use App\Services\GigService;
 use App\ViewModels\AdminDashboardViewModel;
 use App\ViewModels\FreelancerDashboardViewModel;
@@ -58,7 +65,10 @@ class DashboardController extends Controller
     {
         $this->requireRole([RoleType::ADMIN->value, RoleType::PRODUCTION_HOUSE->value]);
 
-        $viewModel = AdminDashboardViewModel::createAdminDefault();
+        $dashboardRole = $this->authUserRole() === RoleType::ADMIN->value ? RoleType::ADMIN->value : RoleType::PRODUCTION_HOUSE->value;
+        $pageTitle = $dashboardRole === RoleType::ADMIN->value ? 'Admin Dashboard - FilmGig' : 'Production House Dashboard - FilmGig';
+        $dashboardApiEndpoint = '/api/dashboard';
+        $dashboardKind = $dashboardRole;
 
         include __DIR__ . '/../Views/dashboards/adminDashboard.php';
     }
@@ -70,9 +80,22 @@ class DashboardController extends Controller
     {
         $this->requireRole([RoleType::FREELANCER->value]);
 
-        $viewModel = FreelancerDashboardViewModel::createFreelancerDefault();
+        $pageTitle = 'Freelancer Dashboard - FilmGig';
+        $dashboardApiEndpoint = '/api/dashboard';
+        $dashboardKind = RoleType::FREELANCER->value;
 
         include __DIR__ . '/../Views/dashboards/freelancerDashboard.php';
+    }
+
+    /**
+     * Return the authenticated dashboard data as JSON for client-side rendering.
+     */
+    public function apiDashboard(array $params = []): void
+    {
+        $this->requireAuthentication();
+
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($this->buildDashboardPayload(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     /**
@@ -296,6 +319,262 @@ class DashboardController extends Controller
     private function getAuthenticatedOwnerName(): string
     {
         return (string) ($_SESSION['auth_user_name'] ?? 'Production House');
+    }
+
+    /**
+     * Build the dashboard payload for the current authenticated user.
+     */
+    private function buildDashboardPayload(): array
+    {
+        $role = $this->authUserRole();
+
+        if ($role === RoleType::FREELANCER->value) {
+            return $this->buildFreelancerDashboardPayload();
+        }
+
+        if ($role === RoleType::ADMIN->value || $role === RoleType::PRODUCTION_HOUSE->value) {
+            return $this->buildProductionHouseDashboardPayload($role);
+        }
+
+        return [];
+    }
+
+    /**
+     * Build the production house/admin dashboard payload.
+     */
+    private function buildProductionHouseDashboardPayload(string $role): array
+    {
+        $gigRepository = new GigRepository(Config::pdo());
+        $submissionRepository = new SubmissionRepository(Config::pdo());
+        $freelancerRepository = new FreelancerRepository(Config::pdo());
+        $productionHouseRepository = new ProductionHouseRepository(Config::pdo());
+        $userRepository = new UserRepository(Config::pdo());
+
+        $ownerId = $this->getAuthenticatedOwnerId();
+        $gigs = $role === RoleType::ADMIN->value ? $gigRepository->findAll() : $gigRepository->findByOwnerId($ownerId);
+        $submissions = $role === RoleType::ADMIN->value ? $submissionRepository->findAll() : $this->collectSubmissionsForGigs($gigs, $submissionRepository);
+
+        usort($gigs, static fn(Gig $left, Gig $right): int => strcmp($right->getCreatedAt(), $left->getCreatedAt()));
+        usort($submissions, static fn(Submission $left, Submission $right): int => strcmp($right->getSubmittedAt(), $left->getSubmittedAt()));
+
+        $badgeLabel = $role === RoleType::ADMIN->value ? 'Admin Dashboard' : 'Production House Dashboard';
+        $heroDescription = $role === RoleType::ADMIN->value
+            ? 'Monitor live platform activity and oversee platform-wide gig performance.'
+            : 'Track your gigs, review live applications, and manage production activity from one place.';
+
+        $stats = [
+            [
+                'label' => 'Active Gigs',
+                'value' => (string) count(array_filter($gigs, static fn(Gig $gig): bool => $gig->getStatus() === 'active')),
+                'note' => $role === RoleType::ADMIN->value ? 'Across the platform' : 'Your live gigs',
+                'id' => 'activeGigs',
+            ],
+            [
+                'label' => 'Pending Submissions',
+                'value' => (string) count(array_filter($submissions, static fn(Submission $submission): bool => $submission->getStatus() === SubmissionStatus::PENDING->value)),
+                'note' => $role === RoleType::ADMIN->value ? 'Awaiting review' : 'Awaiting your review',
+                'id' => 'pendingSubmissions',
+            ],
+            [
+                'label' => 'Freelancers',
+                'value' => (string) count($freelancerRepository->findAll()),
+                'note' => 'Registered creators',
+            ],
+            [
+                'label' => 'Production Houses',
+                'value' => (string) count($productionHouseRepository->findAll()),
+                'note' => 'Publishing gigs',
+            ],
+        ];
+
+        $primaryRows = array_map(function (Gig $gig) use ($submissions, $role): array {
+            $applicantCount = count(array_filter($submissions, static fn(Submission $submission): bool => $submission->getGigId() === $gig->getGigId()));
+
+            return [
+                'title' => $gig->getTitle(),
+                'status' => ucfirst($gig->getStatus()),
+                'value' => (string) $applicantCount,
+                'viewUrl' => '/gigs/' . $gig->getGigId(),
+                'editUrl' => '/dashboard/gigs/' . $gig->getGigId(),
+                'canEdit' => $role !== RoleType::ADMIN->value,
+            ];
+        }, array_slice($gigs, 0, 6));
+
+        $secondaryItems = array_map(fn(Submission $submission): array => $this->mapSubmissionToDashboardListItem($submission, $userRepository), array_slice($submissions, 0, 5));
+
+        return AdminDashboardViewModel::createFromData(
+            pageTitle: $role === RoleType::ADMIN->value ? 'Admin Dashboard - FilmGig' : 'Production House Dashboard - FilmGig',
+            badgeLabel: $badgeLabel,
+            heroDescription: $heroDescription,
+            stats: $stats,
+            primaryTable: [
+                'title' => 'Current Gigs Overview',
+                'columns' => ['Gig Name', 'Status', 'Applicants', 'Actions'],
+                'rows' => $primaryRows,
+            ],
+            secondaryList: [
+                'title' => 'Recent Applications',
+                'items' => $secondaryItems,
+            ],
+        )->toArray();
+    }
+
+    /**
+     * Build the freelancer dashboard payload.
+     */
+    private function buildFreelancerDashboardPayload(): array
+    {
+        $gigRepository = new GigRepository(Config::pdo());
+        $submissionRepository = new SubmissionRepository(Config::pdo());
+        $freelancerRepository = new FreelancerRepository(Config::pdo());
+        $userRepository = new UserRepository(Config::pdo());
+
+        $userId = $this->getAuthenticatedOwnerId();
+        $freelancer = $freelancerRepository->findByUserId($userId);
+
+        if ($freelancer === null) {
+            return FreelancerDashboardViewModel::createFromData(
+                pageTitle: 'Freelancer Dashboard - FilmGig',
+                badgeLabel: 'Freelancer Dashboard',
+                heroDescription: 'Your freelancer profile is not available yet.',
+                stats: [
+                    ['label' => 'Applications', 'value' => '0', 'note' => 'Create your profile to start applying', 'id' => 'pendingSubmissions'],
+                    ['label' => 'Pending Reviews', 'value' => '0', 'note' => 'Waiting for a freelancer profile'],
+                    ['label' => 'Accepted', 'value' => '0', 'note' => 'No accepted submissions yet'],
+                    ['label' => 'Rejected', 'value' => '0', 'note' => 'No rejected submissions yet'],
+                ],
+                applications: [
+                    'title' => 'My Applications',
+                    'columns' => ['Gig Title', 'Category', 'Location', 'Status', 'Submitted At', 'Actions'],
+                    'rows' => [],
+                ],
+                recommendedGigs: [
+                    'title' => 'Recommended Gigs',
+                    'columns' => ['Title', 'Category', 'Location', 'Pay Rate', 'Actions'],
+                    'rows' => [],
+                ],
+                recentActions: [
+                    'title' => 'Recent Application Updates',
+                    'items' => [],
+                ],
+            )->toArray();
+        }
+
+        $submissions = $submissionRepository->findByFreelancerId($freelancer->getFreelancerId());
+        usort($submissions, static fn(Submission $left, Submission $right): int => strcmp($right->getSubmittedAt(), $left->getSubmittedAt()));
+
+        $appliedGigIds = array_map(static fn(Submission $submission): int => $submission->getGigId(), $submissions);
+        $availableGigs = array_values(array_filter(
+            $gigRepository->findAll(),
+            static fn(Gig $gig): bool => $gig->getStatus() === 'active' && !in_array($gig->getGigId(), $appliedGigIds, true)
+        ));
+
+        usort($availableGigs, static fn(Gig $left, Gig $right): int => strcmp($right->getCreatedAt(), $left->getCreatedAt()));
+
+        $submissionRows = array_map(fn(Submission $submission): array => $this->mapFreelancerSubmissionToDashboardRow($submission, $gigRepository), $submissions);
+        $recommendedRows = array_map(fn(Gig $gig): array => $this->mapRecommendedGigToDashboardRow($gig), array_slice($availableGigs, 0, 4));
+        $recentItems = array_map(fn(Submission $submission): array => $this->mapSubmissionToDashboardListItem($submission, $userRepository, true), array_slice($submissions, 0, 5));
+
+        $pendingCount = count(array_filter($submissions, static fn(Submission $submission): bool => $submission->getStatus() === SubmissionStatus::PENDING->value));
+        $acceptedCount = count(array_filter($submissions, static fn(Submission $submission): bool => $submission->getStatus() === SubmissionStatus::ACCEPTED->value));
+        $rejectedCount = count(array_filter($submissions, static fn(Submission $submission): bool => $submission->getStatus() === SubmissionStatus::REJECTED->value));
+
+        return FreelancerDashboardViewModel::createFromData(
+            pageTitle: 'Freelancer Dashboard - FilmGig',
+            badgeLabel: 'Freelancer Dashboard',
+            heroDescription: 'Track opportunities, applications, and your ongoing projects.',
+            stats: [
+                ['label' => 'Applications', 'value' => (string) count($submissions), 'note' => 'All submissions', 'id' => 'pendingSubmissions'],
+                ['label' => 'Pending Reviews', 'value' => (string) $pendingCount, 'note' => 'Waiting on production houses'],
+                ['label' => 'Accepted', 'value' => (string) $acceptedCount, 'note' => 'Successful applications'],
+                ['label' => 'Rejected', 'value' => (string) $rejectedCount, 'note' => 'Closed responses'],
+            ],
+            applications: [
+                'title' => 'My Applications',
+                'columns' => ['Gig Title', 'Category', 'Location', 'Status', 'Submitted At', 'Actions'],
+                'rows' => $submissionRows,
+            ],
+            recommendedGigs: [
+                'title' => 'Recommended Gigs',
+                'columns' => ['Title', 'Category', 'Location', 'Pay Rate', 'Actions'],
+                'rows' => $recommendedRows,
+            ],
+            recentActions: [
+                'title' => 'Recent Application Updates',
+                'items' => $recentItems,
+            ],
+        )->toArray();
+    }
+
+    /**
+     * Collect submissions for the supplied gigs.
+     */
+    private function collectSubmissionsForGigs(array $gigs, SubmissionRepository $submissionRepository): array
+    {
+        $submissions = [];
+
+        foreach ($gigs as $gig) {
+            foreach ($submissionRepository->findByGigId($gig->getGigId()) as $submission) {
+                $submissions[] = $submission;
+            }
+        }
+
+        return $submissions;
+    }
+
+    /**
+     * Map a submission to a dashboard list item.
+     */
+    private function mapSubmissionToDashboardListItem(Submission $submission, UserRepository $userRepository, bool $useGigTitleAsSubtitle = false): array
+    {
+        $gigRepository = new GigRepository(Config::pdo());
+        $gig = $gigRepository->findById($submission->getGigId());
+        $freelancerRepository = new FreelancerRepository(Config::pdo());
+        $freelancer = $freelancerRepository->findById($submission->getFreelancerId());
+        $freelancerUser = $freelancer !== null ? $userRepository->findById($freelancer->getUserId()) : null;
+
+        return [
+            'title' => $freelancerUser !== null ? $freelancerUser->getName() : ($gig !== null ? $gig->getTitle() : 'Unknown Submission'),
+            'subtitle' => $useGigTitleAsSubtitle
+                ? (($gig !== null ? $gig->getTitle() : 'Unknown Gig') . ' · ' . ucfirst($submission->getStatus()))
+                : (($gig !== null ? $gig->getTitle() : 'Unknown Gig') . ' · ' . ucfirst($submission->getStatus())),
+            'meta' => $submission->getSubmittedAt(),
+            'detailUrl' => $gig !== null ? '/gigs/' . $gig->getGigId() : '/gigs',
+        ];
+    }
+
+    /**
+     * Map a submission to a freelancer dashboard row.
+     */
+    private function mapFreelancerSubmissionToDashboardRow(Submission $submission, GigRepository $gigRepository): array
+    {
+        $gig = $gigRepository->findById($submission->getGigId());
+
+        return [
+            'title' => $gig !== null ? $gig->getTitle() : 'Unknown Gig',
+            'category' => $gig !== null ? $gig->getCategory() : '',
+            'location' => $gig !== null ? $gig->getLocation() : '',
+            'status' => ucfirst($submission->getStatus()),
+            'submittedAt' => $submission->getSubmittedAt(),
+            'detailUrl' => $gig !== null ? '/gigs/' . $gig->getGigId() : '/gigs',
+            'canWithdraw' => $submission->getStatus() === SubmissionStatus::PENDING->value,
+            'submissionId' => $submission->getSubmissionId(),
+        ];
+    }
+
+    /**
+     * Map a gig to a recommended gig dashboard row.
+     */
+    private function mapRecommendedGigToDashboardRow(Gig $gig): array
+    {
+        return [
+            'title' => $gig->getTitle(),
+            'category' => $gig->getCategory(),
+            'location' => $gig->getLocation(),
+            'value' => sprintf('EUR %.2f', $gig->getPayRate()),
+            'detailUrl' => '/gigs/' . $gig->getGigId(),
+            'applyUrl' => '/gigs/' . $gig->getGigId(),
+        ];
     }
 
     /**

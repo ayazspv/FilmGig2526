@@ -1,7 +1,7 @@
 # Dashboard
 
 ## Purpose
-Route authenticated users to the correct dashboard and protect role-specific dashboard pages.
+Route authenticated users to the correct dashboard and populate dashboard sections from live JSON API data.
 
 ## Controller Files Used
 - [app/src/Controllers/DashboardController.php](../../app/src/Controllers/DashboardController.php)
@@ -11,6 +11,7 @@ Route authenticated users to the correct dashboard and protect role-specific das
 - `DashboardController::showDashboard()`
 - `DashboardController::showAdminDashboard()`
 - `DashboardController::showFreelancerDashboard()`
+- `DashboardController::apiDashboard()`
 - `DashboardController::showAdminGigListing()`
 - `DashboardController::showAdminGigPosting()`
 - `DashboardController::showAdminGigEditing()`
@@ -30,26 +31,40 @@ Route authenticated users to the correct dashboard and protect role-specific das
 
 ### Methods Used
 - `AdminDashboardViewModel::createAdminDefault()`
+- `AdminDashboardViewModel::createFromData()`
+- `AdminDashboardViewModel::toArray()`
 - `FreelancerDashboardViewModel::createFreelancerDefault()`
+- `FreelancerDashboardViewModel::createFromData()`
+- `FreelancerDashboardViewModel::toArray()`
 - `AdminGigListingViewModel::createDefault()`
 - `AdminGigPostingViewModel::createDefault()`
 - `AdminGigEditingViewModel::createDefault()`
 - `AdminSubmissionReviewViewModel::createFromSubmissions()`
 
 ## Repository Files Used
-- None directly in the current dashboard controller layer.
+- [app/src/Repositories/GigRepository.php](../../app/src/Repositories/GigRepository.php)
+- [app/src/Repositories/SubmissionRepository.php](../../app/src/Repositories/SubmissionRepository.php)
+- [app/src/Repositories/FreelancerRepository.php](../../app/src/Repositories/FreelancerRepository.php)
+- [app/src/Repositories/ProductionHouseRepository.php](../../app/src/Repositories/ProductionHouseRepository.php)
+- [app/src/Repositories/UserRepository.php](../../app/src/Repositories/UserRepository.php)
 
 ## Service Files Used
-- None directly in the current dashboard controller layer.
+- [app/src/Services/SubmissionService.php](../../app/src/Services/SubmissionService.php)
+
+## Frontend Files Used
+- [app/public/assets/js/dashboard.js](../../app/public/assets/js/dashboard.js)
+- [app/src/Views/dashboards/adminDashboard.php](../../app/src/Views/dashboards/adminDashboard.php)
+- [app/src/Views/dashboards/freelancerDashboard.php](../../app/src/Views/dashboards/freelancerDashboard.php)
 
 ## Flow
 1. The user opens `/dashboard`.
-2. `DashboardController::showDashboard()` checks authentication.
-3. The controller reads the stored role from session.
-4. Admin and production house users are routed to the admin dashboard.
-5. Freelancer users are routed to the freelancer dashboard.
-6. Role-specific gig management pages are protected with `Controller::requireRole()`.
-7. The admin dashboard also provides a shortcut to the submission review page.
-8. The admin submission review page is protected with the admin role check.
-9. If a user is not authenticated, they are redirected to `/signin`.
-10. If a user is authenticated but tries to access the wrong role page, they are redirected to `/dashboard`.
+2. `DashboardController::showDashboard()` checks authentication and routes the user to the correct shell view.
+3. The shell view exposes the `/api/dashboard` endpoint to the browser.
+4. `dashboard.js` fetches the JSON payload from `/api/dashboard`.
+5. `DashboardController::apiDashboard()` builds the live dashboard payload from repositories and services.
+6. `AdminDashboardViewModel::toArray()` or `FreelancerDashboardViewModel::toArray()` serializes the dashboard data.
+7. The browser renders the stats, tables, and activity lists from the API payload.
+8. Role-specific gig management pages are still protected with `Controller::requireRole()`.
+9. The admin submission review page is protected with the admin role check.
+10. If a user is not authenticated, they are redirected to `/signin`.
+11. If a user is authenticated but tries to access the wrong role page, they are redirected to `/dashboard`.

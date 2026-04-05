@@ -2,6 +2,7 @@
 
 $e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 $homeApiEndpoint = $homeApiEndpoint ?? '/api/home';
+$pageScripts = ['/assets/js/home.js'];
 
 // Header and Navigation
 include __DIR__ . '/partials/header.php';

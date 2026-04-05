@@ -261,9 +261,15 @@ class DashboardController extends Controller
         $gigId = $this->extractAndValidateGigId($params);
         $ownerId = $this->getAuthenticatedOwnerId();
 
-        $this->getGigService()->delete($gigId, $ownerId);
+        $result = $this->getGigService()->delete($gigId, $ownerId);
 
-        $this->redirectToGigListingWithSuccess('Gig deleted successfully.');
+        if (($result['success'] ?? false) === true) {
+            $this->redirectToGigListingWithSuccess('Gig deleted successfully.');
+            return;
+        }
+
+        $_SESSION['gig_error_message'] = (string) (($result['errors']['general'] ?? 'Unable to delete this gig right now.'));
+        $this->redirect('/dashboard/gigs');
     }
 
     /**

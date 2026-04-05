@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Enums\GigCategory;
 use App\Enums\GigRateType;
+use App\Enums\GigStatus;
 use App\Framework\Service;
 use App\Repositories\GigRepository;
+use App\Repositories\SubmissionRepository;
 use App\Services\Interfaces\IGigService;
 use DateTimeImmutable;
 use PDO;
@@ -24,6 +26,7 @@ use Throwable;
 class GigService extends Service implements IGigService
 {
     private GigRepository $gigRepository;
+    private SubmissionRepository $submissionRepository;
     private GigImageService $imageService;
 
     /**
@@ -33,6 +36,7 @@ class GigService extends Service implements IGigService
     {
         parent::__construct($pdo);
         $this->gigRepository = new GigRepository($pdo);
+        $this->submissionRepository = new SubmissionRepository($pdo);
         $this->imageService = new GigImageService($pdo);
     }
 
@@ -200,6 +204,15 @@ class GigService extends Service implements IGigService
             return $this->buildFailureResult(['general' => 'Gig not found or access denied.']);
         }
 
+        $hasApplicants = count($this->submissionRepository->findByGigId($gigId)) > 0;
+        $isActiveGig = strtolower((string) $gig->getStatus()) === GigStatus::ACTIVE->value;
+
+        if ($isActiveGig && $hasApplicants) {
+            return $this->buildFailureResult([
+                'general' => 'Active gigs with applicants cannot be deleted. Close the gig first or resolve submissions before deleting.',
+            ]);
+        }
+
         // Delete gig from database
         try {
             $this->gigRepository->delete($gigId);
@@ -319,7 +332,7 @@ class GigService extends Service implements IGigService
         }
 
         // Validate status
-        if (!in_array($input['status'], ['active', 'closed'], true)) {
+        if (!GigStatus::isValid($input['status'])) {
             $errors['status'] = 'Please choose a valid gig status.';
         }
 

@@ -4,6 +4,7 @@ namespace App\ViewModels;
 
 use App\Enums\GigCategory;
 use App\Enums\GigRateType;
+use App\Enums\GigStatus;
 use App\Models\Gig;
 
 class AdminGigEditingViewModel 
@@ -35,7 +36,7 @@ class AdminGigEditingViewModel
                 ['name' => 'startDate', 'label' => 'Start Date', 'type' => 'date'],
                 ['name' => 'rateType', 'label' => 'Rate Type', 'type' => 'select', 'options' => GigRateType::options()],
                 ['name' => 'payRate', 'label' => 'Pay Rate (EUR)', 'type' => 'number', 'placeholder' => 50],
-                ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => ['active', 'closed']],
+                ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => GigStatus::options()],
             ],
             gigData: [
                 'gigId' => 0,
@@ -47,7 +48,7 @@ class AdminGigEditingViewModel
                 'startDate' => '',
                 'rateType' => GigRateType::HOURLY->value,
                 'payRate' => '50',
-                'status' => 'active',
+                'status' => GigStatus::ACTIVE->value,
             ],
         );
     }

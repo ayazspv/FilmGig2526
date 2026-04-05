@@ -6,7 +6,9 @@ $heroTitle = $viewModel->heroTitle;
 $heroDescription = $viewModel->heroDescription;
 $primaryTable = $viewModel->primaryTable;
 $successMessage = $_SESSION['gig_success_message'] ?? null;
+$errorMessage = $_SESSION['gig_error_message'] ?? null;
 unset($_SESSION['gig_success_message']);
+unset($_SESSION['gig_error_message']);
 ?>
 
 <div class="d-flex flex-column min-vh-100" style="background-color: #E5E7EB;">
@@ -31,6 +33,12 @@ unset($_SESSION['gig_success_message']);
             <?php if ($successMessage !== null): ?>
                 <div class="alert alert-success shadow-sm border-0 rounded-4 mb-4">
                     <?= htmlspecialchars($successMessage) ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($errorMessage !== null): ?>
+                <div class="alert alert-danger shadow-sm border-0 rounded-4 mb-4">
+                    <?= htmlspecialchars($errorMessage) ?>
                 </div>
             <?php endif; ?>
 

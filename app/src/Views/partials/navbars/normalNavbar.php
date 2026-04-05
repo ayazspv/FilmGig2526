@@ -14,10 +14,10 @@
                     <a class="nav-link" href="/#how-it-works">How It Works</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="gigs">Find Gigs</a>
+                    <a class="nav-link" href="/#why-filmgig">Why FilmGig</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/#why-filmgig">Why FilmGig</a>
+                    <a class="nav-link" href="gigs">Find Gigs</a>
                 </li>
                 <!-- <li class="nav-item">
                     <a class="nav-link" href="#">About</a>
